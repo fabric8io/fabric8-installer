@@ -40,6 +40,14 @@ If you wish to try the latest/greatest snapshot builds of fabric8 and the apps y
 
     mvn install -Pfabric8-snapshot
 
+### Other options
+
+Add the `recreate` property if you wish to force recreation of kubernetes resources:
+
+    mvn install -Drecreate=true
+
+If ommitted then resources are updated if they already exist.
+
 ### Apps
 
 The following apps are available:
