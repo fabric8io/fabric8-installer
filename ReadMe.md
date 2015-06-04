@@ -30,6 +30,16 @@ Or via the $KUBERNETES_DOMAIN environment variable:
     mvn install
 ```  
 
+### Using different versions
+
+If you wish to change the fabric8 version you wish to install, just edit the pom.xml for the `fabric8.version` or you can just supply it on the command line:
+
+    mvn install -Dfabric8.version=2.1.6
+
+If you wish to try the latest/greatest snapshot builds of fabric8 and the apps you can use this profile:
+
+    mvn install -Pfabric8-snapshot
+
 ### Apps
 
 The following apps are available:
