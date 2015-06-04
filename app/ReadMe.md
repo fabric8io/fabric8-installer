@@ -1,6 +1,6 @@
 ## Install an individual Fabric8 App
 
-This build lets you install a single application from the [Fabric8 Apps](http://fabric8.io/guide/apps.html) on Kubernetes or OpenShift by specifying the `artifactId` property on the command line.
+This build lets you install one of the [individual microservices](https://github.com/fabric8io/quickstarts/tree/master/apps) from fabric8 on Kubernetes or OpenShift by specifying the `artifactId` property on the command line.
 
 e.g.
 

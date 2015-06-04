@@ -4,7 +4,9 @@ This is an installer project for installing the [Fabric8 Apps](http://fabric8.io
 
 To use this project you need to install a recent distribution of [Apache Maven](http://maven.apache.org/)
 
-### How to install an app
+### How to install a main app
+
+To install one of the [main apps](http://fabric8.io/guide/fabric8Apps.html) in fabric8:
 
 * clone the respository and cd into the directory for the _app groups_ you wish to install. e.g.
 
@@ -32,7 +34,7 @@ Or via the $KUBERNETES_DOMAIN environment variable:
 
 ### Installing individual micro services
 
-The above supports the main _app groups_ of fabric8 byt there are a [number of individual microservices]() you can install individually.
+The above supports the [main apps](http://fabric8.io/guide/fabric8Apps.html) in fabric8 but there are a [number of individual microservices](https://github.com/fabric8io/quickstarts/tree/master/apps) you can install individually.
  
 For those use the `app` folder and specify the `artifactId` property:
  
