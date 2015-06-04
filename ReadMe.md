@@ -4,9 +4,9 @@ This is an installer project for installing the [Fabric8 Apps](http://fabric8.io
 
 To use this project you need to install a recent distribution of [Apache Maven](http://maven.apache.org/)
 
-### How to install an app 
+### How to install an app
 
-* clone the respository and cd into the directory for the app you wish to install. e.g.
+* clone the respository and cd into the directory for the _app groups_ you wish to install. e.g.
 
 ```
     git clone https://github.com/fabric8io/fabric8-installer.git
@@ -30,6 +30,25 @@ Or via the $KUBERNETES_DOMAIN environment variable:
     mvn install
 ```  
 
+### Installing individual micro services
+
+The above supports the main _app groups_ of fabric8 byt there are a [number of individual microservices]() you can install individually.
+ 
+For those use the `app` folder and specify the `artifactId` property:
+ 
+```
+    git clone https://github.com/fabric8io/fabric8-installer.git
+    cd fabric8-installer
+    cd app
+    mvn install -DartifactId=jenkins
+```
+
+Or to install a specific version of an app:
+
+```
+    mvn install -DartifactId=jenkins -Dfabric8.version=2.1.6
+```
+ 
 ### Using different versions
 
 If you wish to change the fabric8 version you wish to install, just edit the pom.xml for the `fabric8.version` or you can just supply it on the command line:
