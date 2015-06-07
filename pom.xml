@@ -28,7 +28,7 @@
   <name>Fabric8 :: Installer</name>
 
   <properties>
-    <fabric8.version>2.1.6</fabric8.version>
+    <fabric8.version>2.1.10</fabric8.version>
 
     <recreate>false</recreate>
     <domain>${env.KUBERNETES_DOMAIN}</domain>
