@@ -45,12 +45,47 @@ while true; do
   curl -k -s -f -o /dev/null --connect-timeout 1 https://localhost:8443/healthz/ready && break || sleep 1
 done
 
-sleep 30
-
 oadm policy add-cluster-role-to-user cluster-admin admin
 oadm router --create --credentials=/var/lib/openshift/openshift.local.config/master/openshift-router.kubeconfig
 oadm registry --create --credentials=/var/lib/openshift/openshift.local.config/master/openshift-registry.kubeconfig
 oadm new-project fabric8 --description="fabric8 Apps"
+
+oc delete scc restricted
+cat <<EOF | oc create -f -
+---
+  apiVersion: v1
+  groups:
+  - system:authenticated
+  kind: SecurityContextConstraints
+  metadata:
+    name: restricted
+  runAsUser:
+    type: RunAsAny
+  seLinuxContext:
+    type: MustRunAs
+EOF
+
+oc delete scc privileged
+cat <<EOF | oc create -f -
+---
+  allowHostDirVolumePlugin: true
+  allowPrivilegedContainer: true
+  apiVersion: v1
+  groups:
+  - system:cluster-admins
+  - system:nodes
+  kind: SecurityContextConstraints
+  metadata:
+    name: privileged
+  runAsUser:
+    type: RunAsAny
+  seLinuxContext:
+    type: RunAsAny
+  users:
+  - system:serviceaccount:openshift-infra:build-controller
+  - system:serviceaccount:default:default
+  - system:serviceaccount:default:fabric8
+EOF
 
 cat <<EOF | oc create -f -
 ---
@@ -63,6 +98,7 @@ cat <<EOF | oc create -f -
     admin-cert: "$(base64 -w 0 /var/lib/openshift/openshift.local.config/master/admin.crt)"
     admin-key: "$(base64 -w 0 /var/lib/openshift/openshift.local.config/master/admin.key)"
 EOF
+
 cat <<EOF | oc create -f -
 ---
   apiVersion: v1
