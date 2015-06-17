@@ -4,6 +4,10 @@ This is an installer project for installing the [Fabric8 Apps](http://fabric8.io
 
 To use this project you need to install a recent distribution of [Apache Maven](http://maven.apache.org/)
 
+### Running Kubernetes / OpenShift via Vagrant
+
+If you want to try this on your laptop you might want to check out the [Fabric8 Vagrant Images](vagrant)
+
 ### How to install a main app
 
 To install one of the [main apps](http://fabric8.io/guide/fabric8Apps.html) in fabric8:

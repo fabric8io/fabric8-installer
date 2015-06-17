@@ -45,6 +45,7 @@
 
     <fabric8.apply.DOMAIN>${domain}</fabric8.apply.DOMAIN>
     <fabric8.apply.GOGS_SERVER_DOMAIN>gogs.${domain}</fabric8.apply.GOGS_SERVER_DOMAIN>
+    <fabric8.apply.GOGS_SERVER_DOMAIN>gogs.${domain}</fabric8.apply.GOGS_SERVER_DOMAIN>
   </properties>
 
   <modules>

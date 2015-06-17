@@ -13,6 +13,7 @@ overlays
 .classpath
 *.fmd
 .cache
+.vagrant
 dependency-reduced-pom.xml
 kube-cluster/kubernetes
 apps/modifiedFabric8.json
