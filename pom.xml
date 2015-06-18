@@ -28,13 +28,13 @@
   <name>Fabric8 :: Installer</name>
 
   <properties>
-    <fabric8.version>2.1.11</fabric8.version>
+    <fabric8.version>2.2.0</fabric8.version>
 
     <recreate>false</recreate>
     <domain>${env.KUBERNETES_DOMAIN}</domain>
 
     <!-- lets combine dependent kubernetes json files -->
-    <fabric8.combineDependencies>true</fabric8.combineDependencies>
+    <fabric8.combineDependencies>false</fabric8.combineDependencies>
 
     <!-- allow build not to barf in the root directory -->
     <fabric8.failOnMissingJsonFiles>false</fabric8.failOnMissingJsonFiles>
