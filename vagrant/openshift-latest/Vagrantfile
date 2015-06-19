@@ -165,14 +165,20 @@ EOF
 
 echo
 echo
-echo Now we need to wait for the fabric8 pod to startup.
-echo This will take a few minutes as it downloads the docker image.
+echo
+echo
+echo
+echo Now we need to wait for the 'fabric8' pod to startup.
+echo This will take a few minutes as it downloads some docker images.
+echo
 echo Please be patient!
 echo --------------------------------------------------------------
 echo
 echo Now might be a good time to setup your host machine to work with OpenShift
 echo
 echo - Download a recent release of the binaries and add them to your PATH:
+echo
+echo "    https://github.com/openshift/origin/releases/"
 echo
 echo - Set the following environment variables:
 echo
@@ -200,6 +206,7 @@ echo
 echo or you can watch from the command line via one of these commands:
 echo
 echo "    watch oc get pods"
+echo "    oc get pods --watch"
 echo
 echo
 echo --------------------------------------------------------------
@@ -222,13 +229,11 @@ echo When you first open your browser Chrome will say:
 echo
 echo "   Your connection is not private"
 echo
-echo - Don't panic!"
+echo - Don't panic!
 echo
 echo - Click on the small 'Advanced' link on the bottom right
 echo
 echo - Now click on the link that says 'Proceed to fabric8.vagrant.local (unsafe)' bottom right
-echo
-echo - Now the browser should redirect to the login page. Enter admin/admin
 echo
 echo - Now the browser should redirect to the login page. Enter admin/admin
 echo
