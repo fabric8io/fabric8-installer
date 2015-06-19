@@ -14,7 +14,9 @@ cd fabric8-installer/vagrant/openshift-latest
 vagrant up
 ```
 
-Then follow the on screen instructions. 
+Then follow the on screen instructions.
+ 
+* Downloading the docker images may take a few minutes so you might want to jump ahead to the [Setting up your local machine](#setting-up-your-local-machine) then coming back here when you're done. 
 
 * After the vagrant box is created and docker images are downloaded, the [fabric8 console](http://fabric8.io/guide/console.html) should appear at [http://fabric8.vagrant.local/](http://fabric8.vagrant.local/)
   
