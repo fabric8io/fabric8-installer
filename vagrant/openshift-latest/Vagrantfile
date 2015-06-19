@@ -163,16 +163,12 @@ cat <<EOF | oc create -f -
 }
 EOF
 
-echo "Now updating the /etc/hosts file to point to the kubernetes services"
-#echo >> /etc/hosts
-#echo "# added by fabric8 vagrant box:" >> /etc/hosts
-#echo "172.28.128.4 vagrant.local fabric8.vagrant.local fabric8-master.vagrant.local jenkins.vagrant.local gogs.vagrant.local nexus.vagrant.local hubot-web-hook.vagrant.local letschat.vagrant.local kibana.vagrant.local taiga.vagrant.local fabric8-forge.vagrant.local" >> /etc/hosts
-
 echo
 echo
+echo Now we need to wait for the fabric8 pod to startup.
+echo This will take a few minutes as it downloads the docker image.
+echo Please be patient!
 echo
-echo
-echo Now we need to wait for the fabric8 pod to startup....
 echo You can watch progress by typing the following commands:
 echo
 echo "    oc login --insecure-skip-tls-verify=false https://172.28.128.4:8443"
@@ -227,6 +223,14 @@ echo Have fun!
 SCRIPT
 
 Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
+  config.hostmanager.enabled = true
+  config.hostmanager.manage_host = true
+  config.hostmanager.ignore_private_ip = false
+  config.hostmanager.include_offline = true
+
+  config.hostmanager.aliases = %w(vagrant.local fabric8.vagrant.local fabric8-master.vagrant.local jenkins.vagrant.local gogs.vagrant.local nexus.vagrant.local hubot-web-hook.vagrant.local letschat.vagrant.local kibana.vagrant.local taiga.vagrant.local fabric8-forge.vagrant.local)
+
+
   config.vm.box = "jimmidyson/centos-7.1"
   config.vm.box_version = "= 1.0.2"
 
@@ -234,11 +238,13 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
   config.vm.hostname = "fabric8-master.vagrant.local"
 
+
   config.vm.provider "virtualbox" do |v|
     v.memory = 4096
     v.cpus = 2
     v.customize ["modifyvm", :id, "--natdnshostresolver1", "on"]
   end
+
 
   config.vm.provision "shell", inline: $provisionScript
 
