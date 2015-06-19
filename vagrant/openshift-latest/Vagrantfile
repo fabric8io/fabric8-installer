@@ -231,9 +231,9 @@ echo "   Your connection is not private"
 echo
 echo - Don't panic!
 echo
-echo - Click on the small 'Advanced' link on the bottom right
+echo - Click on the small 'Advanced' link on the bottom left
 echo
-echo - Now click on the link that says 'Proceed to fabric8.vagrant.local (unsafe)' bottom right
+echo - Now click on the link that says 'Proceed to fabric8.vagrant.local (unsafe)' bottom left
 echo
 echo - Now the browser should redirect to the login page. Enter admin/admin
 echo

@@ -16,7 +16,7 @@ vagrant up
 
 Then follow the on screen instructions. 
 
-* After the vagrant box is created and docker images are downloaded, the [fabric8 console](http://fabric8.io/guide/console.html) should appear at [http://fabric8.vagrant.local/](http://fabric8.vagrant.local/).
+* After the vagrant box is created and docker images are downloaded, the [fabric8 console](http://fabric8.io/guide/console.html) should appear at [http://fabric8.vagrant.local/](http://fabric8.vagrant.local/)
   
 * When you first open your browser Chrome will say:
 
@@ -25,20 +25,21 @@ Your connection is not private
 ```
 
 * Don't panic! This is to be expected.
-* Click on the small `Advanced` link on the bottom right
-* Now click on the link that says `Proceed to fabric8.vagrant.local (unsafe)` bottom right
+* Click on the small `Advanced` link on the bottom left
+* Now click on the link that says `Proceed to fabric8.vagrant.local (unsafe)` bottom left
 * Now the browser should redirect to the login page 
 * Enter `admin` and `admin`
 * You should now be in the main fabric8 console! That was easy eh! :)
-* Make sure you start off in the 'default' namespace.
+* Make sure you start off in the `default` namespace.
 
 ### Installing other applications
 
-When you are on the `Apps` tab in the [fabric8 console](http://fabric8.io/guide/console.html) click on the `Run...` button. The installed 
-  echo
-  echo
-To install more applications click the Run... button on the Apps tab.
-  echo
+When you are on the `Apps` tab in the [fabric8 console](http://fabric8.io/guide/console.html) click on the `Run...` button. 
+
+This will list all of the installed [OpenShift Templates](http://docs.openshift.org/latest/dev_guide/templates.html) on your installation.
+
+* To Run any of the installed templates just click the `Run` button (the green play button).
+* To install any new [OpenShift Templates](http://docs.openshift.org/latest/dev_guide/templates.html) or other Kubernetes resources just drag and drop the JSON file onto the `Apps` tab! 
 
 ### Setting up your local machine
 
