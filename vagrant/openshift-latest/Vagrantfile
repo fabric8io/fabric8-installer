@@ -168,12 +168,31 @@ echo
 echo Now we need to wait for the fabric8 pod to startup.
 echo This will take a few minutes as it downloads the docker image.
 echo Please be patient!
+echo --------------------------------------------------------------
 echo
-echo You can watch progress by typing the following commands:
+echo Now might be a good time to setup your host machine to work with OpenShift
+echo
+echo - Download a recent release of the binaries and add them to your PATH:
+echo
+echo - Set the following environment variables:
+echo
+echo "    export KUBERNETES_MASTER=https://172.28.128.4:8443"
+echo "    export KUBERNETES_DOMAIN=vagrant.local"
+echo "    export KUBERNETES_TRUST_CERT=true"
+echo "    export DOCKER_HOST=tcp://vagrant.local:2375"
+echo
+echo
+echo Now login to OpenShift via this command:
 echo
 echo "    oc login --insecure-skip-tls-verify=false https://172.28.128.4:8443"
 echo
 echo Then enter admin/admin for user/password.
+echo
+echo Over time your token may expire and you will need to reauthenticate via:
+echo
+echo "    oc login"
+echo
+echo
 echo Now to see the status of the system:
 echo
 echo "    oc get pods"
@@ -183,12 +202,7 @@ echo
 echo "    watch oc get pods"
 echo
 echo
-echo Now might be a good time to setup your host machine to work with OpenShift
-echo
-echo - Download a recent release of the binaries and add them to your PATH:
-echo
-echo - Set the following environment variables:
-echo
+echo --------------------------------------------------------------
 echo
 echo Now waiting for the fabric8 pod to start Running....
 
