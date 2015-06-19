@@ -206,9 +206,9 @@ echo "   Your connection is not private"
 echo
 echo * Don't panic!
 echo
-echo * Click on the small `Advanced` link on the bottom right
+echo * Click on the small 'Advanced' link on the bottom right
 echo
-echo * Now click on the link that says `Proceed to fabric8.vagrant.local (unsafe)` bottom right
+echo * Now click on the link that says 'Proceed to fabric8.vagrant.local (unsafe)' bottom right
 echo
 echo * Now the browser should redirect to the login page. Enter admin/admin
 echo
@@ -216,7 +216,7 @@ echo * Now the browser should redirect to the login page. Enter admin/admin
 echo
 echo * You should now be in the main fabric8 console. That was easy eh! :)
 echo
-echo * Make sure you start off in the `default` namespace.
+echo * Make sure you start off in the 'default' namespace.
 echo
 echo
 echo To install more applications click the Run... button on the Apps tab.
