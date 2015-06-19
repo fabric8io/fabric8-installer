@@ -249,6 +249,10 @@ echo Have fun!
 
 SCRIPT
 
+unless Vagrant.has_plugin?("vagrant-hostmanager")
+  raise 'Please type this command then try again: vagrant plugin install vagrant-hostmanager'
+end
+
 Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   config.hostmanager.enabled = true
   config.hostmanager.manage_host = true
