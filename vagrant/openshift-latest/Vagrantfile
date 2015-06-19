@@ -168,8 +168,62 @@ echo "Now updating the /etc/hosts file to point to the kubernetes services"
 #echo "# added by fabric8 vagrant box:" >> /etc/hosts
 #echo "172.28.128.4 vagrant.local fabric8.vagrant.local fabric8-master.vagrant.local jenkins.vagrant.local gogs.vagrant.local nexus.vagrant.local hubot-web-hook.vagrant.local letschat.vagrant.local kibana.vagrant.local taiga.vagrant.local fabric8-forge.vagrant.local" >> /etc/hosts
 
-echo "Now we need to wait for the fabric8 pod to startup...."
-echo "Then the fabric8 console will appear at http://fabric8.vagrant.local/"
+echo
+echo
+echo
+echo
+echo Now we need to wait for the fabric8 pod to startup....
+echo You can watch progress by typing the following commands:
+echo
+echo "    oc login --insecure-skip-tls-verify=false https://172.28.128.4:8443"
+echo
+echo Then enter admin/admin for user/password.
+echo Now to see the status of the system:
+echo
+echo "    oc get pods"
+echo
+echo or you can watch from the command line via one of these commands:
+echo
+echo "    watch oc get pods"
+echo
+echo Now waiting for the fabric8 pod to start Running....
+
+until oc get pods -l component=console,provider=fabric8  | grep -m 1 "Running"; do sleep 1 ; done
+
+echo
+echo --------------------------------------------------------------
+echo Fabric8 pod is running! Who-hoo!
+echo --------------------------------------------------------------
+echo
+echo
+echo Now open the fabric8 console at:
+echo
+echo "    http://fabric8.vagrant.local/"
+echo
+echo When you first open your browser Chrome will say:
+echo
+echo "   Your connection is not private"
+echo
+echo * Don't panic!
+echo
+echo * Click on the small `Advanced` link on the bottom right
+echo
+echo * Now click on the link that says `Proceed to fabric8.vagrant.local (unsafe)` bottom right
+echo
+echo * Now the browser should redirect to the login page. Enter admin/admin
+echo
+echo * Now the browser should redirect to the login page. Enter admin/admin
+echo
+echo * You should now be in the main fabric8 console. That was easy eh! :)
+echo
+echo * Make sure you start off in the `default` namespace.
+echo
+echo
+echo To install more applications click the Run... button on the Apps tab.
+echo
+echo We love feedback: http://fabric8.io/community/
+echo Have fun!
+
 SCRIPT
 
 Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
