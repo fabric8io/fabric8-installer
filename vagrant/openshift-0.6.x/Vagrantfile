@@ -20,7 +20,7 @@ systemctl restart docker.service
 
 mkdir /tmp/openshift
 echo "Downloading OpenShift binaries..."
-curl -sSL https://github.com/openshift/origin/releases/download/v1.0.0/openshift-origin-v1.0.0-67617dd-linux-amd64.tar.gz | tar xzv -C /tmp/openshift
+curl -sSL https://github.com/openshift/origin/releases/download/v0.6.2/openshift-origin-v0.6.2-6a30f4d-linux-amd64.tar.gz | tar xzv -C /tmp/openshift
 mv /tmp/openshift/* /usr/bin/
 
 mkdir /var/lib/openshift
