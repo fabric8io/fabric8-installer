@@ -6,6 +6,8 @@ VAGRANTFILE_API_VERSION = "2"
 
 Vagrant.require_version ">= 1.7.2"
 
+FABRIC8_VERSION="2.2.1"
+
 $provisionScript = <<SCRIPT
 if [ -d '/var/lib/openshift' ]; then
   exit 0
@@ -133,6 +135,41 @@ cat <<EOF | oc create -f -
 EOF
 echo "127.0.0.1    docker-registry.vagrant.local" >> /etc/hosts
 
+export FABRIC8_VERSION=${FABRIC8_VERSION:=2.2.1}
+echo "Installing templates from fabric8 version ${FABRIC8_VERSION}"
+for app in base management logging metrics cdelivery-core cdelivery ipaas kitchen-sink; do
+  echo "Installing ${app} template"
+  oc create -f http://central.maven.org/maven2/io/fabric8/apps/${app}/${FABRIC8_VERSION}/${app}-${FABRIC8_VERSION}-kubernetes.json
+done
+
+# now lets instantiate the console
+oc process base | oc create -f -
+
+# now lets create a route for it:
+cat <<EOF | oc create -f -
+{
+    "kind": "Route",
+    "apiVersion": "v1",
+    "metadata": {
+        "name": "fabric8"
+    },
+    "spec": {
+        "host": "fabric8.vagrant.local",
+        "to": {
+            "kind": "Service",
+            "name": "fabric8"
+        }
+    }
+}
+EOF
+
+echo "Now updating the /etc/hosts file to point to the kubernetes services"
+#echo >> /etc/hosts
+#echo "# added by fabric8 vagrant box:" >> /etc/hosts
+#echo "172.28.128.4 vagrant.local fabric8.vagrant.local fabric8-master.vagrant.local jenkins.vagrant.local gogs.vagrant.local nexus.vagrant.local hubot-web-hook.vagrant.local letschat.vagrant.local kibana.vagrant.local taiga.vagrant.local fabric8-forge.vagrant.local" >> /etc/hosts
+
+echo "Now we need to wait for the fabric8 pod to startup...."
+echo "Then the fabric8 console will appear at http://fabric8.vagrant.local/"
 SCRIPT
 
 Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
