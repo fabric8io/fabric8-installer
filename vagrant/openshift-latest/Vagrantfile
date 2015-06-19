@@ -182,6 +182,14 @@ echo or you can watch from the command line via one of these commands:
 echo
 echo "    watch oc get pods"
 echo
+echo
+echo Now might be a good time to setup your host machine to work with OpenShift
+echo
+echo - Download a recent release of the binaries and add them to your PATH:
+echo
+echo - Set the following environment variables:
+echo
+echo
 echo Now waiting for the fabric8 pod to start Running....
 
 until oc get pods -l component=console,provider=fabric8  | grep -m 1 "Running"; do sleep 1 ; done
@@ -200,19 +208,19 @@ echo When you first open your browser Chrome will say:
 echo
 echo "   Your connection is not private"
 echo
-echo * Don't panic!
+echo - Don't panic!"
 echo
-echo * Click on the small 'Advanced' link on the bottom right
+echo - Click on the small 'Advanced' link on the bottom right
 echo
-echo * Now click on the link that says 'Proceed to fabric8.vagrant.local (unsafe)' bottom right
+echo - Now click on the link that says 'Proceed to fabric8.vagrant.local (unsafe)' bottom right
 echo
-echo * Now the browser should redirect to the login page. Enter admin/admin
+echo - Now the browser should redirect to the login page. Enter admin/admin
 echo
-echo * Now the browser should redirect to the login page. Enter admin/admin
+echo - Now the browser should redirect to the login page. Enter admin/admin
 echo
-echo * You should now be in the main fabric8 console. That was easy eh! :)
+echo - You should now be in the main fabric8 console. That was easy eh! :)
 echo
-echo * Make sure you start off in the 'default' namespace.
+echo - Make sure you start off in the 'default' namespace.
 echo
 echo
 echo To install more applications click the Run... button on the Apps tab.
