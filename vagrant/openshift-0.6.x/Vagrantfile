@@ -51,7 +51,6 @@ done
 
 oadm policy add-cluster-role-to-user cluster-admin admin
 oadm router --create --credentials=/var/lib/openshift/openshift.local.config/master/openshift-router.kubeconfig
-oadm registry --create --credentials=/var/lib/openshift/openshift.local.config/master/openshift-registry.kubeconfig
 oadm new-project fabric8 --description="fabric8 Apps"
 
 oc delete scc restricted
@@ -114,27 +113,6 @@ cat <<EOF | oc create -f -
       name: openshift-cert-secrets
 EOF
 
-# Create route to registry. Please not that this route can be used for applications to find
-# the images. Since it goes through the router this is not optimal for production setups
-# when internally images are fetched. 
-cat <<EOF | oc create -f -
-{
-    "kind": "Route",
-    "apiVersion": "v1",
-    "metadata": {
-        "name": "docker-registry-route"
-    },
-    "spec": {
-        "host": "docker-registry.vagrant.local",
-        "to": {
-            "kind": "Service",
-            "name": "docker-registry"
-        }
-    }
-}
-EOF
-echo "127.0.0.1    docker-registry.vagrant.local" >> /etc/hosts
-
 export FABRIC8_VERSION=${FABRIC8_VERSION:=2.2.1}
 echo "Installing templates from fabric8 version ${FABRIC8_VERSION}"
 for app in base management logging metrics cdelivery-core cdelivery ipaas kitchen-sink; do
@@ -162,6 +140,31 @@ cat <<EOF | oc create -f -
     }
 }
 EOF
+
+
+# lets make the docker registry last as its less important to get started
+oadm registry --create --credentials=/var/lib/openshift/openshift.local.config/master/openshift-registry.kubeconfig
+
+# Create route to registry. Please not that this route can be used for applications to find
+# the images. Since it goes through the router this is not optimal for production setups
+# when internally images are fetched.
+cat <<EOF | oc create -f -
+{
+    "kind": "Route",
+    "apiVersion": "v1",
+    "metadata": {
+        "name": "docker-registry-route"
+    },
+    "spec": {
+        "host": "docker-registry.vagrant.local",
+        "to": {
+            "kind": "Service",
+            "name": "docker-registry"
+        }
+    }
+}
+EOF
+
 
 echo
 echo
@@ -259,7 +262,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   config.hostmanager.ignore_private_ip = false
   config.hostmanager.include_offline = true
 
-  config.hostmanager.aliases = %w(vagrant.local fabric8.vagrant.local fabric8-master.vagrant.local jenkins.vagrant.local gogs.vagrant.local nexus.vagrant.local hubot-web-hook.vagrant.local letschat.vagrant.local kibana.vagrant.local taiga.vagrant.local fabric8-forge.vagrant.local)
+  config.hostmanager.aliases = %w(vagrant.local fabric8.vagrant.local fabric8-master.vagrant.local docker-registry.vagrant.local jenkins.vagrant.local gogs.vagrant.local nexus.vagrant.local gerrot.vagrant.local hubot-web-hook.vagrant.local letschat.vagrant.local kibana.vagrant.local grafana.vagrant.local taiga.vagrant.local fabric8-forge.vagrant.local api-registry.vagrant.local apiman.vagrant.local)
 
 
   config.vm.box = "jimmidyson/centos-7.1"
