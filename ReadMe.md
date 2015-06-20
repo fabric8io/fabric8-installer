@@ -1,14 +1,20 @@
 ## Fabric8 Installer
 
-This is an installer project for installing the [Fabric8 Apps](http://fabric8.io/guide/apps.html) on Kubernetes or OpenShift.
+This project helps you get started with the [Fabric8 Apps](http://fabric8.io/guide/apps.html) on Kubernetes or OpenShift.
 
-To use this project you need to install a recent distribution of [Apache Maven](http://maven.apache.org/)
+Our preferred way to get started is using a [Fabric8 Vagrant Image](vagrant)
 
-### Running Kubernetes / OpenShift via Vagrant
+### Using Vagrant
 
-If you want to try this on your laptop you might want to check out the [Fabric8 Vagrant Images](vagrant)
+The easiest way to get started with Kubernetes / OpenShift on your laptop is via a [Fabric8 Vagrant Images](vagrant)
 
-### How to install a main app
+* [Use Vagrant](vagrant)
+
+### Using Maven
+
+If you have an existing Kubernetes or OpenShift installation and have a recent distribution of [Apache Maven](http://maven.apache.org/) you can use Maven ot install the [Fabric8 Apps](http://fabric8.io/guide/apps.html)
+
+#### How to install a main app
 
 To install one of the [main apps](http://fabric8.io/guide/fabric8Apps.html) in fabric8:
 
@@ -36,7 +42,7 @@ Or via the $KUBERNETES_DOMAIN environment variable:
     mvn install
 ```  
 
-### Installing individual micro services
+#### Installing individual micro services
 
 The above supports the [main apps](http://fabric8.io/guide/fabric8Apps.html) in fabric8 but there are a [number of individual microservices](https://github.com/fabric8io/quickstarts/tree/master/apps) you can install individually.
  
@@ -55,7 +61,7 @@ Or to install a specific version of an app:
     mvn install -DartifactId=jenkins -Dfabric8.version=2.1.6
 ```
  
-### Using different versions
+#### Using different versions
 
 If you wish to change the fabric8 version you wish to install, just edit the pom.xml for the `fabric8.version` or you can just supply it on the command line:
 
@@ -65,7 +71,7 @@ If you wish to try the latest/greatest snapshot builds of fabric8 and the apps y
 
     mvn install -Pfabric8-snapshot
 
-### Other options
+#### Other options
 
 Add the `recreate` property if you wish to force recreation of kubernetes resources:
 
@@ -75,7 +81,7 @@ If ommitted then resources are updated if they already exist.
 
 ### Apps
 
-The following apps are available:
+The following fabric8 apps are available:
 
 * [Base](base) provides the [Console](http://fabric8.io/guide/console.html) with the [App Library](appLibrary.html) 
 * [Management](management) adds to [Base](base):
