@@ -169,7 +169,7 @@ Please be patient!
 
 Now might be a good time to setup your host machine to work with OpenShift
 
-* Download a recent release of the binaries and add them to your PATH:
+*  Download a recent release of the binaries and add them to your PATH:
 
    https://github.com/openshift/origin/releases/
 
@@ -192,14 +192,15 @@ Over time your token may expire and you will need to reauthenticate via:
 
 Now to see the status of the system:
 
-   oc get pods
+    oc get pods
 
 or you can watch from the command line via one of these commands:
 
-   watch oc get pods
-   oc get pods --watch
+    watch oc get pods
+    oc get pods --watch
 
 --------------------------------------------------------------
+
 Now waiting for the fabric8 pod to start Running....
 EOT
 
@@ -219,11 +220,17 @@ When you first open your browser Chrome will say:
    Your connection is not private
 
 * Don't panic!
+
 * Click on the small 'Advanced' link on the bottom left
+
 * Now click on the link that says 'Proceed to fabric8.vagrant.local (unsafe)' bottom left
+
 * Now the browser should redirect to the login page. Enter admin/admin
+
 * You should now be in the main fabric8 console. That was easy eh! :)
+
 * Make sure you start off in the 'default' namespace.
+
 
 To install more applications click the Run... button on the Apps tab.
 
@@ -244,6 +251,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
   config.hostmanager.aliases = %w(vagrant.local fabric8.vagrant.local fabric8-master.vagrant.local jenkins.vagrant.local gogs.vagrant.local nexus.vagrant.local hubot-web-hook.vagrant.local letschat.vagrant.local kibana.vagrant.local taiga.vagrant.local fabric8-forge.vagrant.local)
 
+
   config.vm.box = "jimmidyson/centos-7.1"
   config.vm.box_version = "= 1.1.0"
 
@@ -251,11 +259,13 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
   config.vm.hostname = "fabric8-master.vagrant.local"
 
+
   config.vm.provider "virtualbox" do |v|
     v.memory = 4096
     v.cpus = 2
     v.customize ["modifyvm", :id, "--natdnshostresolver1", "on"]
   end
+
 
   config.vm.provision "shell", inline: $provisionScript
 
