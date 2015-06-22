@@ -6,7 +6,5 @@ We highly recommend [openshift-latest](openshift-latest) but we will keep some o
 
 * [openshift-latest](openshift-latest) for the latest OpenShift release using 1.x
 * [openshift-0.6.x](openshift-0.6.x) for the last known working 0.6.x release
-* [openshift-0.5.x](openshift-0.5.x) for the last known working 0.5.x release
 
-For more details see how to use the [Fabric8 Vagrant Image](http://fabric8.io/guide/getStartedVagrant.html
-)
+For more details see how to use the [Fabric8 Vagrant Image](http://fabric8.io/guide/getStartedVagrant.html)
