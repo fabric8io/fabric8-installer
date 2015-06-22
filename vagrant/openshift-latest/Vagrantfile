@@ -4,7 +4,7 @@
 # Vagrantfile API/syntax version. Don't touch unless you know what you're doing!
 VAGRANTFILE_API_VERSION = "2"
 
-FABRIC8_VERSION = ENV['FABRIC8_VERSION'] || "2.2.1"
+FABRIC8_VERSION = ENV['FABRIC8_VERSION'] || "2.2.2"
 if !FABRIC8_VERSION || FABRIC8_VERSION.end_with?("SNAPSHOT")
   MVN_URL='https://oss.sonatype.org/service/local/artifact/maven/redirect?r=snapshots&e=json&c=kubernetes&g=io.fabric8.apps&a=${app}&v=' + FABRIC8_VERSION
 else
@@ -126,7 +126,7 @@ cat <<EOF | oc create -f -
         "name": "docker-registry-route"
     },
     "spec": {
-        "host": "docker-registry.vagrant.local",
+        "host": "docker-registry.vagrant.f8",
         "to": {
             "kind": "Service",
             "name": "docker-registry"
@@ -134,10 +134,10 @@ cat <<EOF | oc create -f -
     }
 }
 EOF
-echo "127.0.0.1    docker-registry.vagrant.local" >> /etc/hosts
+echo "127.0.0.1    docker-registry.vagrant.f8" >> /etc/hosts
 
 echo "Installing templates from fabric8 version #{FABRIC8_VERSION}"
-for app in base management logging metrics cdelivery-core cdelivery ipaas kitchen-sink; do
+for app in base management logging metrics chat cdelivery-core cdelivery apiman messaging ipaas kitchen-sink quickstarts; do
   echo "Installing ${app} template"
   echo "About to install template: #{MVN_URL}"
   oc create -f #{MVN_URL}
@@ -159,7 +159,7 @@ cat <<EOF | oc create -f -
         "name": "fabric8"
     },
     "spec": {
-        "host": "fabric8.vagrant.local",
+        "host": "fabric8.vagrant.f8",
         "to": {
             "kind": "Service",
             "name": "fabric8"
@@ -189,9 +189,9 @@ echo
 echo "* Set the following environment variables:
 echo
 echo "    export KUBERNETES_MASTER=https://172.28.128.4:8443"
-echo "    export KUBERNETES_DOMAIN=vagrant.local"
+echo "    export KUBERNETES_DOMAIN=vagrant.f8"
 echo "    export KUBERNETES_TRUST_CERT=true"
-echo "    export DOCKER_HOST=tcp://vagrant.local:2375"
+echo "    export DOCKER_HOST=tcp://vagrant.f8:2375"
 echo
 echo
 echo Now login to OpenShift via this command:
@@ -229,7 +229,7 @@ echo
 echo
 echo Now open the fabric8 console at:
 echo
-echo "    http://fabric8.vagrant.local/"
+echo "    http://fabric8.vagrant.f8/"
 echo
 echo When you first open your browser Chrome will say:
 echo
@@ -239,7 +239,7 @@ echo "* Don't panic!"
 echo
 echo "* Click on the small 'Advanced' link on the bottom left"
 echo
-echo "* Now click on the link that says 'Proceed to fabric8.vagrant.local (unsafe)' bottom left"
+echo "* Now click on the link that says 'Proceed to fabric8.vagrant.f8 (unsafe)' bottom left"
 echo
 echo "* Now the browser should redirect to the login page. Enter admin/admin"
 echo
@@ -265,7 +265,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   config.hostmanager.ignore_private_ip = false
   config.hostmanager.include_offline = true
 
-  config.hostmanager.aliases = %w(vagrant.local fabric8.vagrant.local fabric8-master.vagrant.local jenkins.vagrant.local gogs.vagrant.local nexus.vagrant.local hubot-web-hook.vagrant.local letschat.vagrant.local kibana.vagrant.local taiga.vagrant.local fabric8-forge.vagrant.local quickstart-camelservlet.vagrant.local quickstart-cxf-cdi.vagrant.local)
+  config.hostmanager.aliases = %w(vagrant.f8 fabric8.vagrant.f8 fabric8-master.vagrant.f8 jenkins.vagrant.f8 gogs.vagrant.f8 nexus.vagrant.f8 hubot-web-hook.vagrant.f8 letschat.vagrant.f8 kibana.vagrant.f8 taiga.vagrant.f8 fabric8-forge.vagrant.f8 quickstart-camelservlet.vagrant.f8 quickstart-cxf-cdi.vagrant.f8 fabric8mq.vagrant.f8)
 
 
   config.vm.box = "jimmidyson/centos-7.1"
@@ -273,7 +273,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
   config.vm.network "private_network", ip: "172.28.128.4"
 
-  config.vm.hostname = "fabric8-master.vagrant.local"
+  config.vm.hostname = "fabric8-master.vagrant.f8"
 
 
   config.vm.provider "virtualbox" do |v|
