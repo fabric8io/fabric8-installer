@@ -1,21 +1,12 @@
-# coding: utf-8
 # -*- mode: ruby -*-
 # vi: set ft=ruby :
 
 # Vagrantfile API/syntax version. Don't touch unless you know what you're doing!
 VAGRANTFILE_API_VERSION = "2"
 
-FABRIC8_VERSION = ENV['FABRIC8_VERSION'] || "2.2.3"
-if !FABRIC8_VERSION || FABRIC8_VERSION.end_with?("SNAPSHOT")
-  MVN_URL='https://oss.sonatype.org/service/local/artifact/maven/redirect?r=snapshots&e=json&c=kubernetes&g=io.fabric8.apps&a=${app}&v=' + FABRIC8_VERSION
-  MVN_QUICKSTART_URL='https://oss.sonatype.org/service/local/artifact/maven/redirect?r=snapshots&e=json&c=kubernetes&g=io.fabric8.jube.images.fabric8&a=${app}&v=' + FABRIC8_VERSION
-else
-  MVN_URL="http://central.maven.org/maven2/io/fabric8/apps/${app}/#{FABRIC8_VERSION}/${app}-#{FABRIC8_VERSION}-kubernetes.json"
-  MVN_QUICKSTART_URL="http://central.maven.org/maven2/io/fabric8/jube/images/fabric8/${app}/#{FABRIC8_VERSION}/${app}-#{FABRIC8_VERSION}-kubernetes.json"
-end
-
-
 Vagrant.require_version ">= 1.7.2"
+
+FABRIC8_VERSION="2.2.1"
 
 $provisionScript = <<SCRIPT
 if [ -d '/var/lib/openshift' ]; then
@@ -27,18 +18,8 @@ echo "Downloading OpenShift binaries..."
 curl -sSL https://github.com/openshift/origin/releases/download/v1.0.0/openshift-origin-v1.0.0-67617dd-linux-amd64.tar.gz | tar xzv -C /tmp/openshift
 mv /tmp/openshift/* /usr/bin/
 
-mkdir -p /var/lib/openshift/openshift.local.manifests
-
-pushd /var/lib/openshift
-/usr/bin/openshift start --master=172.28.128.4 --cors-allowed-origins=.* --hostname=172.28.128.4 --write-config=/var/lib/openshift/openshift.local.config
-cat <<EOF >> /var/lib/openshift/openshift.local.config/node-172.28.128.4/node-config.yaml
-kubeletArguments:
-  "read-only-port":
-    - "10255"
-EOF
-sed -i 's|^podManifestConfig: null|podManifestConfig:\\n  path: /var/lib/openshift/openshift.local.manifests\\n  fileCheckIntervalSeconds: 10|' /var/lib/openshift/openshift.local.config/node-172.28.128.4/node-config.yaml
-popd
-restorecon -Rv /var/lib/openshift
+mkdir /var/lib/openshift
+restorecon -v /var/lib/openshift
 
 cat <<EOF > /usr/lib/systemd/system/openshift.service
 [Unit]
@@ -46,7 +27,7 @@ Description=OpenShift
 Requires=docker.service network.service
 After=network.service
 [Service]
-ExecStart=/usr/bin/openshift start --master-config=/var/lib/openshift/openshift.local.config/master/master-config.yaml --node-config=/var/lib/openshift/openshift.local.config/node-172.28.128.4/node-config.yaml
+ExecStart=/usr/bin/openshift start --master=172.28.128.4 --cors-allowed-origins=.*
 WorkingDirectory=/var/lib/openshift/
 [Install]
 WantedBy=multi-user.target
@@ -128,16 +109,6 @@ cat <<EOF | oc create -f -
       name: openshift-cert-secrets
 EOF
 
-cat <<EOF | oc create -f -
----
-  apiVersion: v1
-  kind: ServiceAccount
-  metadata:
-    name: metrics
-EOF
-
-oadm policy add-cluster-role-to-user cluster-reader system:serviceaccount:default:metrics
-
 # Create route to registry. Please not that this route can be used for applications to find
 # the images. Since it goes through the router this is not optimal for production setups
 # when internally images are fetched. 
@@ -149,7 +120,7 @@ cat <<EOF | oc create -f -
         "name": "docker-registry-route"
     },
     "spec": {
-        "host": "docker-registry.vagrant.f8",
+        "host": "docker-registry.vagrant.local",
         "to": {
             "kind": "Service",
             "name": "docker-registry"
@@ -157,28 +128,13 @@ cat <<EOF | oc create -f -
     }
 }
 EOF
-echo "127.0.0.1    docker-registry.vagrant.f8" >> /etc/hosts
+echo "127.0.0.1    docker-registry.vagrant.local" >> /etc/hosts
 
-echo "Installing templates from fabric8 version #{FABRIC8_VERSION}"
-for app in base management logging metrics chat cdelivery-core cdelivery apiman messaging ipaas kitchen-sink quickstarts; do
+export FABRIC8_VERSION=${FABRIC8_VERSION:=2.2.1}
+echo "Installing templates from fabric8 version ${FABRIC8_VERSION}"
+for app in base management logging metrics cdelivery-core cdelivery ipaas kitchen-sink; do
   echo "Installing ${app} template"
-  echo "About to install template: #{MVN_URL}"
-  oc create -f #{MVN_URL}
-
-  # for snapshots:
-  #curl –silent -o /tmp/${app}.json  -L -H "Accept: */*" "#{MVN_URL}"
-  #oc create -f /tmp/${app}.json
-done
-
-echo "Installing quickstart templates from fabric8 version #{FABRIC8_VERSION}"
-for app in fabric8mq-producer fabric8mq-consumer; do
-  echo "Installing ${app} app template"
-  echo "About to install app template: #{MVN_QUICKSTART_URL}"
-  oc create -f #{MVN_QUICKSTART_URL}
-
-  # for snapshots:
-  #curl –silent -o /tmp/${app}.json  -L -H "Accept: */*" "#{MVN_QUICKSTART_URL}"
-  #oc create -f /tmp/${app}.json
+  oc create -f http://central.maven.org/maven2/io/fabric8/apps/${app}/${FABRIC8_VERSION}/${app}-${FABRIC8_VERSION}-kubernetes.json
 done
 
 # now lets instantiate the console
@@ -193,7 +149,7 @@ cat <<EOF | oc create -f -
         "name": "fabric8"
     },
     "spec": {
-        "host": "fabric8.vagrant.f8",
+        "host": "fabric8.vagrant.local",
         "to": {
             "kind": "Service",
             "name": "fabric8"
@@ -201,6 +157,51 @@ cat <<EOF | oc create -f -
     }
 }
 EOF
+
+cat <<EOT
+The OpenShift console is at: https://172.28.128.4:8443/console
+
+Now we need to wait for the 'fabric8' pod to startup.
+This will take a few minutes as it downloads some docker images.
+
+Please be patient!
+--------------------------------------------------------------
+
+Now might be a good time to setup your host machine to work with OpenShift
+
+* Download a recent release of the binaries and add them to your PATH:
+
+   https://github.com/openshift/origin/releases/
+
+* Set the following environment variables:
+
+   export KUBERNETES_MASTER=https://172.28.128.4:8443
+   export KUBERNETES_DOMAIN=vagrant.local
+   export KUBERNETES_TRUST_CERT=true
+   export DOCKER_HOST=tcp://vagrant.local:2375
+
+Now login to OpenShift via this command:
+
+   oc login --insecure-skip-tls-verify=false https://172.28.128.4:8443
+
+Then enter admin/admin for user/password.
+
+Over time your token may expire and you will need to reauthenticate via:
+
+   oc login
+
+Now to see the status of the system:
+
+   oc get pods
+
+or you can watch from the command line via one of these commands:
+
+   watch oc get pods
+   oc get pods --watch
+
+--------------------------------------------------------------
+Now waiting for the fabric8 pod to start Running....
+EOT
 
 until oc get pods -l component=console,provider=fabric8  | grep -m 1 "Running"; do sleep 1 ; done
 
@@ -211,24 +212,18 @@ Fabric8 pod is running! Who-hoo!
 
 Now open the fabric8 console at:
 
-    http://fabric8.vagrant.f8/
+    http://fabric8.vagrant.local/
 
 When you first open your browser Chrome will say:
 
    Your connection is not private
 
 * Don't panic!
-
 * Click on the small 'Advanced' link on the bottom left
-
 * Now click on the link that says 'Proceed to fabric8.vagrant.local (unsafe)' bottom left
-
 * Now the browser should redirect to the login page. Enter admin/admin
-
 * You should now be in the main fabric8 console. That was easy eh! :)
-
 * Make sure you start off in the 'default' namespace.
-
 
 To install more applications click the Run... button on the Apps tab.
 
@@ -247,23 +242,20 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   config.hostmanager.ignore_private_ip = false
   config.hostmanager.include_offline = true
 
-  config.hostmanager.aliases = %w(vagrant.f8 fabric8.vagrant.f8 fabric8-master.vagrant.f8 jenkins.vagrant.f8 gogs.vagrant.f8 nexus.vagrant.f8 gerrit.vagrant.f8 hubot-web-hook.vagrant.f8 letschat.vagrant.f8 kibana.vagrant.f8 grafana.vagrant.f8 taiga.vagrant.f8 fabric8-forge.vagrant.f8 quickstart-camelservlet.vagrant.f8 quickstart-cxf-cdi.vagrant.f8 quickstart-rest.vagrant.f8 fabric8mq.vagrant.f8)
-
+  config.hostmanager.aliases = %w(vagrant.local fabric8.vagrant.local fabric8-master.vagrant.local jenkins.vagrant.local gogs.vagrant.local nexus.vagrant.local hubot-web-hook.vagrant.local letschat.vagrant.local kibana.vagrant.local taiga.vagrant.local fabric8-forge.vagrant.local)
 
   config.vm.box = "jimmidyson/centos-7.1"
   config.vm.box_version = "= 1.1.0"
 
   config.vm.network "private_network", ip: "172.28.128.4"
 
-  config.vm.hostname = "fabric8-master.vagrant.f8"
-
+  config.vm.hostname = "fabric8-master.vagrant.local"
 
   config.vm.provider "virtualbox" do |v|
     v.memory = 4096
     v.cpus = 2
     v.customize ["modifyvm", :id, "--natdnshostresolver1", "on"]
   end
-
 
   config.vm.provision "shell", inline: $provisionScript
 
