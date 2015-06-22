@@ -167,6 +167,7 @@ echo
 echo
 echo
 echo
+echo The OpenShift console is at: https://172.28.128.4:8443/console
 echo
 echo Now we need to wait for the 'fabric8' pod to startup.
 echo This will take a few minutes as it downloads some docker images.
@@ -176,11 +177,11 @@ echo --------------------------------------------------------------
 echo
 echo Now might be a good time to setup your host machine to work with OpenShift
 echo
-echo "*Download a recent release of the binaries and add them to your PATH:
+echo "* Download a recent release of the binaries and add them to your PATH:
 echo
 echo "    https://github.com/openshift/origin/releases/"
 echo
-echo "*Set the following environment variables:
+echo "* Set the following environment variables:
 echo
 echo "    export KUBERNETES_MASTER=https://172.28.128.4:8443"
 echo "    export KUBERNETES_DOMAIN=vagrant.local"
