@@ -127,6 +127,16 @@ cat <<EOF | oc create -f -
       name: openshift-cert-secrets
 EOF
 
+cat <<EOF | oc create -f -
+---
+  apiVersion: v1
+  kind: ServiceAccount
+  metadata:
+    name: metrics
+EOF
+
+oadm policy add-cluster-role-to-user cluster-reader system:serviceaccount:default:metrics
+
 # Create route to registry. Please not that this route can be used for applications to find
 # the images. Since it goes through the router this is not optimal for production setups
 # when internally images are fetched. 
@@ -211,15 +221,13 @@ echo "    https://github.com/openshift/origin/releases/"
 echo
 echo "* Set the following environment variables:
 echo
-echo "    export KUBERNETES_MASTER=https://172.28.128.4:8443"
 echo "    export KUBERNETES_DOMAIN=vagrant.f8"
-echo "    export KUBERNETES_TRUST_CERT=true"
 echo "    export DOCKER_HOST=tcp://vagrant.f8:2375"
 echo
 echo
 echo Now login to OpenShift via this command:
 echo
-echo "    oc login --insecure-skip-tls-verify=false https://172.28.128.4:8443"
+echo "    oc login https://172.28.128.4:8443"
 echo
 echo Then enter admin/admin for user/password.
 echo
