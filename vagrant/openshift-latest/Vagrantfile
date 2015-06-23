@@ -26,8 +26,18 @@ echo "Downloading OpenShift binaries..."
 curl -sSL https://github.com/openshift/origin/releases/download/v1.0.0/openshift-origin-v1.0.0-67617dd-linux-amd64.tar.gz | tar xzv -C /tmp/openshift
 mv /tmp/openshift/* /usr/bin/
 
-mkdir /var/lib/openshift
-restorecon -v /var/lib/openshift
+mkdir -p /var/lib/openshift/openshift.local.manifests
+
+pushd /var/lib/openshift
+/usr/bin/openshift start --master=172.28.128.4 --cors-allowed-origins=.* --hostname=172.28.128.4 --write-config=/var/lib/openshift/openshift.local.config
+cat <<EOF >> /var/lib/openshift/openshift.local.config/node-172.28.128.4/node-config.yaml
+kubeletArguments:
+  "read-only-port":
+    - "10255"
+EOF
+sed -i 's|^podManifestConfig: null|podManifestConfig:\\n  path: /var/lib/openshift/openshift.local.manifests\\n  fileCheckIntervalSeconds: 10|' /var/lib/openshift/openshift.local.config/node-172.28.128.4/node-config.yaml
+popd
+restorecon -Rv /var/lib/openshift
 
 cat <<EOF > /usr/lib/systemd/system/openshift.service
 [Unit]
@@ -35,7 +45,7 @@ Description=OpenShift
 Requires=docker.service network.service
 After=network.service
 [Service]
-ExecStart=/usr/bin/openshift start --master=172.28.128.4 --cors-allowed-origins=.*
+ExecStart=/usr/bin/openshift start --master-config=/var/lib/openshift/openshift.local.config/master/master-config.yaml --node-config=/var/lib/openshift/openshift.local.config/node-172.28.128.4/node-config.yaml
 WorkingDirectory=/var/lib/openshift/
 [Install]
 WantedBy=multi-user.target
