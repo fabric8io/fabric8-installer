@@ -220,11 +220,9 @@ Now might be a good time to setup your host machine to work with OpenShift
 
    https://github.com/openshift/origin/releases/
 
-* Set the following environment variables:
+* Set the following environment variables (example is in Unix style, use 'set' for Windows):
 
-   export KUBERNETES_MASTER=https://172.28.128.4:8443
    export KUBERNETES_DOMAIN=vagrant.f8
-   export KUBERNETES_TRUST_CERT=true
    export DOCKER_HOST=tcp://vagrant.f8:2375
 
 Now login to OpenShift via this command:
