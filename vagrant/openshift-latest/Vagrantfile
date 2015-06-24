@@ -64,9 +64,13 @@ while true; do
 done
 
 oadm policy add-cluster-role-to-user cluster-admin admin
-oadm router --create --credentials=/var/lib/openshift/openshift.local.config/master/openshift-router.kubeconfig
-oadm registry --create --credentials=/var/lib/openshift/openshift.local.config/master/openshift-registry.kubeconfig
-oadm new-project fabric8 --description="fabric8 Apps"
+
+function downloadImages() {
+  echo ""
+  echo "Finding the docker images inside $1 with name $2"
+  oc get $1 -ojson $2 | grep -Po '"image": ".*",' | grep -Po '(?<=image": ").*(?=",)' | xargs -n1 -ITOKEN docker pull TOKEN
+}
+
 
 oc delete scc restricted
 cat <<EOF | oc create -f -
@@ -138,25 +142,6 @@ EOF
 
 oadm policy add-cluster-role-to-user cluster-reader system:serviceaccount:default:metrics
 
-# Create route to registry. Please not that this route can be used for applications to find
-# the images. Since it goes through the router this is not optimal for production setups
-# when internally images are fetched. 
-cat <<EOF | oc create -f -
-{
-    "kind": "Route",
-    "apiVersion": "v1",
-    "metadata": {
-        "name": "docker-registry-route"
-    },
-    "spec": {
-        "host": "docker-registry.vagrant.f8",
-        "to": {
-            "kind": "Service",
-            "name": "docker-registry"
-        }
-    }
-}
-EOF
 echo "127.0.0.1    docker-registry.vagrant.f8" >> /etc/hosts
 
 echo "Installing templates from fabric8 version #{FABRIC8_VERSION}"
@@ -181,10 +166,16 @@ for app in fabric8mq-producer fabric8mq-consumer; do
   #oc create -f /tmp/${app}.json
 done
 
-# now lets install logging app - includes base
-oc process logging | oc create -f -
+# can't use the snazzy script so lets pull them by hand
+#downloadImages "deploymentConfig" "router"
+docker pull openshift/origin-haproxy-router:v1.0.0
 
-# now lets create a route for kibana:
+oadm router --create --credentials=/var/lib/openshift/openshift.local.config/master/openshift-router.kubeconfig
+oadm new-project fabric8 --description="fabric8 Apps"
+
+
+# now lets create a route for kibana and console:
+echo "Adding routes for the fabric8 console and kibana"
 cat <<EOF | oc create -f -
 {
   "kind": "List",
@@ -219,40 +210,30 @@ cat <<EOF | oc create -f -
 }
 EOF
 
-# And install the node-local fluentd pod
-cat <<'EOF' > /var/lib/openshift/openshift.local.manifests/fluentd.yaml
-apiVersion: v1
-kind: Pod
-metadata:
-  name: fluentd-elasticsearch
-spec:
-  containers:
-  - name: fluentd-elasticsearch
-    image: fabric8/fluentd-kubernetes:1.0
-    securityContext:
-      privileged: true
-    resources:
-      limits:
-        cpu: 100m
-    volumeMounts:
-    - name: varlog
-      mountPath: /var/log
-    - name: varlibdockercontainers
-      mountPath: /var/lib/docker/containers
-      readOnly: true
-    env:
-    - name: ES_HOST
-      value: $(ELASTICSEARCH_SERVICE_HOST)
-  volumes:
-  - name: varlog
-    hostPath:
-      path: /var/log
-  - name: varlibdockercontainers
-    hostPath:
-      path: /var/lib/docker/containers
+# Create route to registry. Please not that this route can be used for applications to find
+# the images. Since it goes through the router this is not optimal for production setups
+# when internally images are fetched.
+cat <<EOF | oc create -f -
+{
+    "kind": "Route",
+    "apiVersion": "v1",
+    "metadata": {
+        "name": "docker-registry-route"
+    },
+    "spec": {
+        "host": "docker-registry.vagrant.f8",
+        "to": {
+            "kind": "Service",
+            "name": "docker-registry"
+        }
+    }
+}
 EOF
 
+
 cat <<EOT
+
+
 
 
 
@@ -295,12 +276,23 @@ or you can watch from the command line via one of these commands:
    oc get pods --watch
 
 --------------------------------------------------------------
-Now waiting for the fabric8 pod to start Running....
+Now waiting for the fabric8 pod to download and start Running....
+--------------------------------------------------------------
+
+Downloading docker images...
 EOT
+
+downloadImages "template" "logging"
+oc process logging | oc create -f -
+
 
 until oc get pods -l component=console,provider=fabric8  | grep -m 1 "Running"; do sleep 1 ; done
 
 cat <<EOT
+
+
+
+
 --------------------------------------------------------------
 Fabric8 pod is running! Who-hoo!
 --------------------------------------------------------------
@@ -324,7 +316,53 @@ To install more applications click the Run... button on the Apps tab.
 
 We love feedback: http://fabric8.io/community/
 Have fun!
+
+Now open the fabric8 console at:
+
+    http://fabric8.vagrant.f8/
+
+--------------------------------------------------------------
+
 EOT
+
+# now lets create the registry
+oadm registry --create --credentials=/var/lib/openshift/openshift.local.config/master/openshift-registry.kubeconfig
+
+
+# And install the node-local fluentd pod
+cat <<'EOF' > /var/lib/openshift/openshift.local.manifests/fluentd.yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: fluentd-elasticsearch
+spec:
+  containers:
+  - name: fluentd-elasticsearch
+    image: fabric8/fluentd-kubernetes:1.0
+    securityContext:
+      privileged: true
+    resources:
+      limits:
+        cpu: 100m
+    volumeMounts:
+    - name: varlog
+      mountPath: /var/log
+    - name: varlibdockercontainers
+      mountPath: /var/lib/docker/containers
+      readOnly: true
+    env:
+    - name: ES_HOST
+      value: $(ELASTICSEARCH_SERVICE_HOST)
+  volumes:
+  - name: varlog
+    hostPath:
+      path: /var/log
+  - name: varlibdockercontainers
+    hostPath:
+      path: /var/lib/docker/containers
+EOF
+
+
 SCRIPT
 
 $windows = (/cygwin|mswin|mingw|bccwin|wince|emx/ =~ RUBY_PLATFORM) != nil
