@@ -227,7 +227,7 @@ Now might be a good time to setup your host machine to work with OpenShift
 
 Now login to OpenShift via this command:
 
-   oc login --insecure-skip-tls-verify=false https://172.28.128.4:8443
+   oc login https://172.28.128.4:8443
 
 Then enter admin/admin for user/password.
 
