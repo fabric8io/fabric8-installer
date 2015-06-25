@@ -380,16 +380,15 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   # Top level domain
   $tld = "f8"
 
-  # Landrush is used together wildcard dns entries to map all
+  # Landrush is used together with wildcard dns entries to map all
   # routes to the proper services
   if $windows
     config.hostmanager.enabled = true
     config.hostmanager.manage_host = true
     config.hostmanager.ignore_private_ip = false
     config.hostmanager.include_offline = true
-    
+
     config.hostmanager.aliases = %w(vagrant.f8 fabric8.vagrant.f8 fabric8-master.vagrant.f8 jenkins.vagrant.f8 gogs.vagrant.f8 nexus.vagrant.f8 hubot-web-hook.vagrant.f8 letschat.vagrant.f8 kibana.vagrant.f8 taiga.vagrant.f8 fabric8-forge.vagrant.f8)
-    config.landrush.enabled = false if Vagrant.has_plugin?('landrush')
   else
     config.landrush.enabled = true
     config.landrush.tld = $tld
