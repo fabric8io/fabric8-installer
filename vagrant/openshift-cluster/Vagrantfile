@@ -1,0 +1,47 @@
+# coding: utf-8
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+# Vagrantfile API/syntax version. Don't touch unless you know what you're doing!
+VAGRANTFILE_API_VERSION = '2'
+
+Vagrant.require_version '>= 1.7.2'
+
+num_minions = (ENV['NUM_MINIONS'] || 1).to_i
+tld = ENV['TLD'] || 'f8'
+
+Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
+
+  config.vm.box = 'jimmidyson/centos-7.1'
+  config.vm.box_version = '= 1.1.3'
+
+  config.vm.provider 'virtualbox' do |v|
+    v.memory = 2048
+    v.cpus = 2
+    v.customize ['modifyvm', :id, '--natdnshostresolver1', 'on']
+  end
+
+  config.vm.provider :libvirt do |v|
+    v.cpus = 2
+    v.memory = 2048
+
+    config.vm.synced_folder './', '/vagrant', type: 'nfs'
+  end
+
+  config.vm.define 'master' do |master|
+    master.vm.network 'private_network', ip: '172.28.128.4'
+    master.vm.hostname = "master.vagrant.#{tld}"
+
+    master.vm.provision "shell", inline: "/vagrant/provision-master.sh 172.28.128.4 master.vagrant.#{tld} #{num_minions}"
+  end
+
+  num_minions.times do |n|
+    config.vm.define "minion-#{n+1}" do |minion|
+      minion.vm.network 'private_network', ip: "172.28.128.#{5+n}"
+      minion.vm.hostname = "minion-#{n+1}.vagrant.#{tld}"
+
+      minion.vm.provision "shell", inline: "/vagrant/provision-minion.sh 172.28.128.#{5+n}"
+    end
+  end
+
+end

@@ -17,3 +17,5 @@ overlays
 dependency-reduced-pom.xml
 kube-cluster/kubernetes
 apps/modifiedFabric8.json
+vagrant/openshift-cluster/openshift
+vagrant/openshift-cluster/openshift-sdn
