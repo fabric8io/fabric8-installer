@@ -4,6 +4,11 @@ MASTER_IP=$1
 MASTER_NAME=$2
 NUM_MINIONS=$3
 
+echo 'export PATH=/vagrant/openshift:$PATH' >> /root/.bashrc
+echo 'export PATH=/vagrant/openshift:$PATH' >> /home/vagrant/.bashrc
+
+PATH=/vagrant/openshift:$PATH
+
 if ! grep ${MASTER_IP} /etc/hosts; then
   echo "${MASTER_IP} ${MASTER_NAME}" >> /etc/hosts
 fi
@@ -71,3 +76,17 @@ EOF
 systemctl daemon-reload
 systemctl enable openshift-master.service
 systemctl start openshift-master.service
+
+while true; do
+  curl -k -s -f -o /dev/null --connect-timeout 1 https://localhost:8443/healthz/ready && break || sleep 1
+done
+
+mkdir -p ~/.kube/
+ln -s /vagrant/openshift/openshift.local.config/master/admin.kubeconfig ~/.kube/config
+mkdir -p /home/vagrant/.kube/
+ln -s /vagrant/openshift/openshift.local.config/master/admin.kubeconfig /home/vagrant/.kube/config
+
+/vagrant/openshift/oadm policy add-cluster-role-to-user cluster-admin admin
+oadm router --credentials=/vagrant/openshift/openshift.local.config/master/openshift-router.kubeconfig
+oadm registry --credentials=/vagrant/openshift/openshift.local.config/master/openshift-registry.kubeconfig
+

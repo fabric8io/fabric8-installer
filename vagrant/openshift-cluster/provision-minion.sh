@@ -2,6 +2,16 @@
 
 minion_name=$1
 
+echo 'export PATH=/vagrant/openshift:$PATH' >> /root/.bashrc
+echo 'export PATH=/vagrant/openshift:$PATH' >> /home/vagrant/.bashrc
+
+PATH=/vagrant/openshift:$PATH
+
+mkdir -p ~/.kube/
+ln -s /vagrant/openshift/openshift.local.config/master/admin.kubeconfig ~/.kube/config
+mkdir -p /home/vagrant/.kube/
+ln -s /vagrant/openshift/openshift.local.config/master/admin.kubeconfig /home/vagrant/.kube/config
+
 yum install -y https://rdoproject.org/repos/rdo-release.rpm
 yum install -y openvswitch git golang bridge-utils
 
