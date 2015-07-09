@@ -147,6 +147,7 @@ cat <<EOF | oc create -f -
 EOF
 
 oadm policy add-cluster-role-to-user cluster-reader system:serviceaccount:default:metrics
+oadm policy add-cluster-role-to-user cluster-admin system:serviceaccount:default:fabric8
 
 echo "127.0.0.1    docker-registry.vagrant.f8" >> /etc/hosts
 
