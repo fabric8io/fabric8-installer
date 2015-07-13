@@ -5,7 +5,9 @@
 # Vagrantfile API/syntax version. Don't touch unless you know what you're doing!
 VAGRANTFILE_API_VERSION = "2"
 
-FABRIC8_VERSION = ENV['FABRIC8_VERSION'] || "2.2.3"
+FABRIC8_VERSION=ENV['FABRIC8_VERSION'] || "2.2.7"
+PREFETCH_IMAGES=ENV['PREFETCH_IMAGES'] || "1"
+
 if !FABRIC8_VERSION || FABRIC8_VERSION.end_with?("SNAPSHOT")
   MVN_URL='https://oss.sonatype.org/service/local/artifact/maven/redirect?r=snapshots&e=json&c=kubernetes&g=io.fabric8.apps&a=${app}&v=' + FABRIC8_VERSION
   MVN_QUICKSTART_URL='https://oss.sonatype.org/service/local/artifact/maven/redirect?r=snapshots&e=json&c=kubernetes&g=io.fabric8.jube.images.fabric8&a=${app}&v=' + FABRIC8_VERSION
@@ -67,8 +69,12 @@ oadm policy add-cluster-role-to-user cluster-admin admin
 
 function downloadImages() {
   echo ""
-  echo "Finding the docker images inside $1 with name $2"
-  oc get $1 -ojson $2 | grep -Po '"image": ".*",' | grep -Po '(?<=image": ").*(?=",)' | xargs -n1 -ITOKEN docker pull TOKEN
+  if [ -n "#{PREFETCH_IMAGES}" -a \\( "#{PREFETCH_IMAGES}" = 1 -o "#{PREFETCH_IMAGES}" = "true" \\) ]; then
+    echo "Finding the docker images inside $1 with name $2"
+    oc get $1 -ojson $2 | grep -Po '"image": ".*",' | grep -Po '(?<=image": ").*(?=",)' | xargs -n1 -ITOKEN docker pull TOKEN
+  else
+    echo "Skip prefetching images"
+  fi
 }
 
 
@@ -157,7 +163,7 @@ for app in base management logging metrics chat cdelivery-core cdelivery apiman 
 done
 
 echo "Installing quickstart templates from fabric8 version #{FABRIC8_VERSION}"
-for app in fabric8mq-producer fabric8mq-consumer; do
+for app in chaos-monkey fabric8mq-producer fabric8mq-consumer; do
   echo "Installing ${app} app template"
   echo "About to install app template: #{MVN_QUICKSTART_URL}"
   oc create -f #{MVN_QUICKSTART_URL}
@@ -367,7 +373,7 @@ EOF
 SCRIPT
 
 $windows = (/cygwin|mswin|mingw|bccwin|wince|emx/ =~ RUBY_PLATFORM) != nil
-          
+
 if $windows && Vagrant.has_plugin?("vagrant-hostmanager")
   raise 'Conflicting vagrant plugin detected - please uninstall & then try again: vagrant plugin uninstall vagrant-hostmanager'
 end
@@ -389,7 +395,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     config.hostmanager.ignore_private_ip = false
     config.hostmanager.include_offline = true
 
-    config.hostmanager.aliases = %w(fabric8.vagrant.f8 fabric8-master.vagrant.f8 jenkins.vagrant.f8 gogs.vagrant.f8 nexus.vagrant.f8 hubot-web-hook.vagrant.f8 letschat.vagrant.f8 kibana.vagrant.f8 taiga.vagrant.f8 fabric8-forge.vagrant.f8)
+    config.hostmanager.aliases = %w(fabric8.vagrant.f8 jenkins.vagrant.f8 gogs.vagrant.f8 nexus.vagrant.f8 hubot-web-hook.vagrant.f8 letschat.vagrant.f8 kibana.vagrant.f8 taiga.vagrant.f8 fabric8-forge.vagrant.f8)
   else
     config.landrush.enabled = true
     config.landrush.tld = $tld
@@ -414,6 +420,6 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     v.memory = 4096
   end
 
-  config.vm.provision "shell", inline: $provisionScript
+  config.vm.provision "shell", inline: $provisionScript, keep_color: true
 
 end
