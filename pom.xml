@@ -34,7 +34,8 @@
     <domain>${env.KUBERNETES_DOMAIN}</domain>
 
     <!-- lets combine dependent kubernetes json files -->
-    <fabric8.combineDependencies>false</fabric8.combineDependencies>
+    <fabric8.combineDependencies>true</fabric8.combineDependencies>
+    <fabric8.generateJson>false</fabric8.generateJson>
 
     <!-- allow build not to barf in the root directory -->
     <fabric8.failOnMissingJsonFiles>false</fabric8.failOnMissingJsonFiles>
@@ -46,6 +47,7 @@
     <fabric8.apply.DOMAIN>${domain}</fabric8.apply.DOMAIN>
     <fabric8.apply.GOGS_SERVER_DOMAIN>gogs.${domain}</fabric8.apply.GOGS_SERVER_DOMAIN>
     <fabric8.apply.GOGS_SERVER_DOMAIN>gogs.${domain}</fabric8.apply.GOGS_SERVER_DOMAIN>
+
   </properties>
 
   <modules>
