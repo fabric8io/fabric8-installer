@@ -1,0 +1,116 @@
+# coding: utf-8
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+# Vagrantfile API/syntax version. Don't touch unless you know what you're doing!
+VAGRANTFILE_API_VERSION = "2"
+
+FABRIC8_VERSION=ENV['FABRIC8_VERSION'] || "2.2.7"
+PREFETCH_IMAGES=ENV['PREFETCH_IMAGES'] || "1"
+
+if !FABRIC8_VERSION || FABRIC8_VERSION.end_with?("SNAPSHOT")
+  MVN_URL='https://oss.sonatype.org/service/local/artifact/maven/redirect?r=snapshots&e=json&c=kubernetes&g=io.fabric8.apps&a=${app}&v=' + FABRIC8_VERSION
+  MVN_QUICKSTART_URL='https://oss.sonatype.org/service/local/artifact/maven/redirect?r=snapshots&e=json&c=kubernetes&g=io.fabric8.jube.images.fabric8&a=${app}&v=' + FABRIC8_VERSION
+else
+  MVN_URL="http://central.maven.org/maven2/io/fabric8/apps/${app}/#{FABRIC8_VERSION}/${app}-#{FABRIC8_VERSION}-kubernetes.json"
+  MVN_QUICKSTART_URL="http://central.maven.org/maven2/io/fabric8/jube/images/fabric8/${app}/#{FABRIC8_VERSION}/${app}-#{FABRIC8_VERSION}-kubernetes.json"
+end
+
+
+Vagrant.require_version ">= 1.7.2"
+
+$provisionScript = <<SCRIPT
+
+echo "Installing etcd locally"
+
+yum -y install etcd
+
+
+echo "systemctl start etcd..."
+echo `systemctl start etcd`
+
+curl -sSL https://get.kismatic.com/kubernetes/master.sh | sudo sh
+
+yum clean expire-cache
+
+echo "Running Services"
+echo "systemctl start kube-apiserver..."
+echo `systemctl start kube-apiserver`
+
+echo "systemctl start kube-scheduler..."
+echo `systemctl start kube-scheduler`
+
+echo "systemctl start kube-controller-manager..."
+echo `systemctl start kube-controller-manager`
+
+echo "systemctl start kubelet..."
+echo `systemctl start kubelet`
+
+echo "service status with"
+echo `systemctl list-units -t service`
+
+echo "waiting 5s for service start"
+sleep 5
+
+echo "Testing api server with curl http://localhost:8080/version"
+echo `curl http://localhost:8080/version`
+
+cat <<EOT
+
+Test with: curl -L http://172.28.128.80:8080/version
+
+EOT
+
+SCRIPT
+
+$windows = (/cygwin|mswin|mingw|bccwin|wince|emx/ =~ RUBY_PLATFORM) != nil
+
+if $windows && Vagrant.has_plugin?("vagrant-hostmanager")
+  raise 'Conflicting vagrant plugin detected - please uninstall & then try again: vagrant plugin uninstall vagrant-hostmanager'
+end
+$pluginToCheck = $windows ? "vagrant-hostmanager-fabric8" : "landrush"
+unless Vagrant.has_plugin?($pluginToCheck)
+  raise 'Please type this command then try again: vagrant plugin install ' + $pluginToCheck
+end
+
+Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
+
+  # Top level domain
+  $tld = "k8s"
+
+  # Landrush is used together with wildcard dns entries to map all
+  # routes to the proper services
+  if $windows
+    config.hostmanager.enabled = true
+    config.hostmanager.manage_host = true
+    config.hostmanager.ignore_private_ip = false
+    config.hostmanager.include_offline = true
+
+    config.hostmanager.aliases = %w(fabric8.vagrant.k8s jenkins.vagrant.k8s gogs.vagrant.k8s nexus.vagrant.k8s hubot-web-hook.vagrant.k8s letschat.vagrant.k8s kibana.vagrant.k8s taiga.vagrant.k8s fabric8-forge.vagrant.k8s)
+  else
+    config.landrush.enabled = true
+    config.landrush.tld = $tld
+    config.landrush.host_ip_address = '172.28.128.80'
+  end
+
+  config.vm.box = "jimmidyson/centos-7.1"
+  config.vm.box_version = "= 1.1.2"
+
+  config.vm.network "private_network", ip: "172.28.128.80"
+
+  config.vm.hostname = "vagrant." + $tld
+
+  config.vm.provider "virtualbox" do |v|
+    v.memory = 4096
+    v.cpus = 2
+    v.customize ["modifyvm", :id, "--natdnshostresolver1", "on"]
+  end
+
+  config.vm.provider :libvirt do |v|
+    v.cpus = 2
+    v.memory = 4096
+  end
+
+  config.vm.provision "shell", inline: $provisionScript, keep_color: true
+
+end
