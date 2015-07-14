@@ -57,7 +57,17 @@ echo `curl http://localhost:8080/version`
 
 cat <<EOT
 
+
 Test with: curl -L http://172.28.128.80:8080/version
+----------------------------------------------------
+
+
+Now to use the kubectl command line tool type:
+
+kubectl config set-cluster local --server=http://172.28.128.80:8080
+kubectl config set-context local
+kubectl config use-context local
+kubectl get pods
 
 EOT
 
