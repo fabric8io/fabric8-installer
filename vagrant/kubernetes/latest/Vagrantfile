@@ -69,6 +69,8 @@ kubectl config set-context local
 kubectl config use-context local
 kubectl get pods
 
+export KUBERNETES_MASTER=http://172.28.128.80:8080
+
 EOT
 
 SCRIPT
