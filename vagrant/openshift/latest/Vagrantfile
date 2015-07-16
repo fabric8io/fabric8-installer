@@ -5,7 +5,7 @@
 # Vagrantfile API/syntax version. Don't touch unless you know what you're doing!
 VAGRANTFILE_API_VERSION = "2"
 
-FABRIC8_VERSION=ENV['FABRIC8_VERSION'] || "2.2.7"
+FABRIC8_VERSION=ENV['FABRIC8_VERSION'] || "2.2.9.1"
 PREFETCH_IMAGES=ENV['PREFETCH_IMAGES'] || "1"
 
 if !FABRIC8_VERSION || FABRIC8_VERSION.end_with?("SNAPSHOT")
@@ -163,7 +163,7 @@ for app in base management logging metrics chat cdelivery-core cdelivery apiman 
 done
 
 echo "Installing quickstart templates from fabric8 version #{FABRIC8_VERSION}"
-for app in chaos-monkey fabric8mq-producer fabric8mq-consumer; do
+for app in chaos-monkey fabric8mq-producer fabric8mq-consumer prometheus grafana2; do
   echo "Installing ${app} app template"
   echo "About to install app template: #{MVN_QUICKSTART_URL}"
   oc create -f #{MVN_QUICKSTART_URL}
@@ -290,7 +290,9 @@ Downloading docker images...
 EOT
 
 downloadImages "template" "logging"
+downloadImages "template" "base"
 oc process logging | oc create -f -
+oc process base | oc create -f -
 
 
 until oc get pods -l component=console,provider=fabric8  | grep -m 1 "Running"; do sleep 1 ; done
