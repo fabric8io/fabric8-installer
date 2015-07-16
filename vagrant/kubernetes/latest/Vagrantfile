@@ -34,7 +34,7 @@ curl -sSL https://get.kismatic.com/kubernetes/master.sh | sudo sh
 yum clean expire-cache
 
 # enable cors on api server
-echo KUBE_API_ARGS="--runtime_config=api/v1beta3 --cluster_name=kubernetes --cors-allowed-origins=.*" >> /etc/kubernetes/master/apiserver.conf
+echo 'KUBE_API_ARGS="--runtime_config=api/v1beta3 --cluster_name=kubernetes --cors-allowed-origins=.*"' >> /etc/kubernetes/master/apiserver.conf
 
 
 echo "Running Services"
