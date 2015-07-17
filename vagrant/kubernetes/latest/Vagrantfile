@@ -6,16 +6,6 @@
 VAGRANTFILE_API_VERSION = "2"
 
 FABRIC8_VERSION=ENV['FABRIC8_VERSION'] || "2.2.10"
-PREFETCH_IMAGES=ENV['PREFETCH_IMAGES'] || "1"
-
-if !FABRIC8_VERSION || FABRIC8_VERSION.end_with?("SNAPSHOT")
-  MVN_URL='https://oss.sthxthxonatype.org/service/local/artifact/maven/redirect?r=snapshots&e=json&c=kubernetes&g=io.fabric8.apps&a=${app}&v=' + FABRIC8_VERSION
-  MVN_QUICKSTART_URL='https://oss.sonatype.org/service/local/artifact/maven/redirect?r=snapshots&e=json&c=kubernetes&g=io.fabric8.jube.images.fabric8&a=${app}&v=' + FABRIC8_VERSION
-else
-  MVN_URL="http://central.maven.org/maven2/io/fabric8/apps/${app}/#{FABRIC8_VERSION}/${app}-#{FABRIC8_VERSION}-kubernetes.json"
-  MVN_QUICKSTART_URL="http://central.maven.org/maven2/io/fabric8/jube/images/fabric8/${app}/#{FABRIC8_VERSION}/${app}-#{FABRIC8_VERSION}-kubernetes.json"
-end
-
 
 Vagrant.require_version ">= 1.7.2"
 
