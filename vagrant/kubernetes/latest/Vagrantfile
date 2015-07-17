@@ -5,11 +5,11 @@
 # Vagrantfile API/syntax version. Don't touch unless you know what you're doing!
 VAGRANTFILE_API_VERSION = "2"
 
-FABRIC8_VERSION=ENV['FABRIC8_VERSION'] || "2.2.7"
+FABRIC8_VERSION=ENV['FABRIC8_VERSION'] || "2.2.10"
 PREFETCH_IMAGES=ENV['PREFETCH_IMAGES'] || "1"
 
 if !FABRIC8_VERSION || FABRIC8_VERSION.end_with?("SNAPSHOT")
-  MVN_URL='https://oss.sonatype.org/service/local/artifact/maven/redirect?r=snapshots&e=json&c=kubernetes&g=io.fabric8.apps&a=${app}&v=' + FABRIC8_VERSION
+  MVN_URL='https://oss.sthxthxonatype.org/service/local/artifact/maven/redirect?r=snapshots&e=json&c=kubernetes&g=io.fabric8.apps&a=${app}&v=' + FABRIC8_VERSION
   MVN_QUICKSTART_URL='https://oss.sonatype.org/service/local/artifact/maven/redirect?r=snapshots&e=json&c=kubernetes&g=io.fabric8.jube.images.fabric8&a=${app}&v=' + FABRIC8_VERSION
 else
   MVN_URL="http://central.maven.org/maven2/io/fabric8/apps/${app}/#{FABRIC8_VERSION}/${app}-#{FABRIC8_VERSION}-kubernetes.json"
@@ -23,7 +23,7 @@ $provisionScript = <<SCRIPT
 
 echo "Installing etcd locally"
 
-yum -y install etcd
+yum -y install etcd git
 
 
 echo "systemctl start etcd..."
@@ -62,8 +62,42 @@ echo `curl http://localhost:8080/version`
 cat <<EOT
 
 
-Test with: curl -L http://172.28.128.80:8080/version
-----------------------------------------------------
+Testing kubernetes
+==================
+You can test kubernetes is running via:
+
+  curl -L http://172.28.128.80:8080/version
+
+
+To setup kubectl on your host:
+=============================
+
+kubectl config set-cluster local --server=http://172.28.128.80:8080
+kubectl config set-context local
+kubectl config use-context local
+kubectl get pods
+
+
+Now installing the fabric8 console...
+
+EOT
+
+kubectl create -f http://central.maven.org/maven2/io/fabric8/apps/console-kubernetes/#{FABRIC8_VERSION}/console-kubernetes-#{FABRIC8_VERSION}-kubernetes.json
+
+echo ""
+echo "Waiting for the fabric8 console to start..."
+
+until kubectl --server=http://172.28.128.80:8080 get pods -l component=console,provider=fabric8  | grep -m 1 "Running"; do sleep 1 ; done
+
+
+cat <<EOT
+
+fabric8 console
+===============
+
+You can now open the fabric8 console at:
+
+  http://172.28.128.80:8080/api/v1/proxy/namespaces/default/services/fabric8/
 
 
 Now to use the kubectl command line tool type:
