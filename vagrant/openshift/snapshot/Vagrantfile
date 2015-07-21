@@ -5,7 +5,7 @@
 # Vagrantfile API/syntax version. Don't touch unless you know what you're doing!
 VAGRANTFILE_API_VERSION = "2"
 
-FABRIC8_VERSION=ENV['FABRIC8_VERSION'] || "2.2.12"
+FABRIC8_VERSION=ENV['FABRIC8_VERSION'] || "2.2.14"
 PREFETCH_IMAGES=ENV['PREFETCH_IMAGES'] || "1"
 
 if !FABRIC8_VERSION || FABRIC8_VERSION.end_with?("SNAPSHOT")
