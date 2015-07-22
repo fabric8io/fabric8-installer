@@ -9,5 +9,5 @@ done
 
 export POD=$(echo $PODNAMES | cut -f 1 -d ' ')
 echo "viewing logs for pod: $POD"
-oc log -f $POD
+oc logs -f $POD
 
