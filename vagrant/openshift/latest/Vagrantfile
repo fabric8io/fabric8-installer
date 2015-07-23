@@ -5,7 +5,7 @@
 # Vagrantfile API/syntax version. Don't touch unless you know what you're doing!
 VAGRANTFILE_API_VERSION = "2"
 
-FABRIC8_VERSION=ENV['FABRIC8_VERSION'] || "2.2.15.1"
+FABRIC8_VERSION=ENV['FABRIC8_VERSION'] || "2.2.16"
 PREFETCH_IMAGES=ENV['PREFETCH_IMAGES'] || "1"
 
 if !FABRIC8_VERSION || FABRIC8_VERSION.end_with?("SNAPSHOT")
@@ -412,14 +412,14 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   config.vm.hostname = "vagrant." + $tld
 
   config.vm.provider "virtualbox" do |v|
-    v.memory = 4096
+    v.memory = 6096
     v.cpus = 2
     v.customize ["modifyvm", :id, "--natdnshostresolver1", "on"]
   end
 
   config.vm.provider :libvirt do |v|
     v.cpus = 2
-    v.memory = 4096
+    v.memory = 6096
   end
 
   if $windows
