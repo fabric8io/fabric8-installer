@@ -68,11 +68,17 @@ kubectl config use-context local
 kubectl get pods
 
 
-Now installing the fabric8 console...
+Now downloading gofabric8...
 
 EOT
 
-kubectl create -f http://central.maven.org/maven2/io/fabric8/apps/console-kubernetes/#{FABRIC8_VERSION}/console-kubernetes-#{FABRIC8_VERSION}-kubernetes.json
+
+curl --retry 999 --retry-max-time 0  -sSL  https://fabric8-ci.fusesource.com/job/gofabric8/lastSuccessfulBuild/artifact/src/github.com/fabric8io/gofabric8/build/gofabric8 > /tmp/gofabric8
+chmod +x /tmp/gofabric8
+sudo mv /tmp/gofabric8 /usr/bin
+
+echo "Using gofabric8 to deploy fabric8 on kubernetes"
+sudo gofabric8 deploy
 
 echo ""
 echo "Waiting for the fabric8 console to start..."
