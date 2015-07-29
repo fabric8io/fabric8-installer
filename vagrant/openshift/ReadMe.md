@@ -1,4 +1,4 @@
-## Fabric8 Vagrant Image
+## Fabric8 OpenShift Vagrant Image
 
 This is the fastest way to get going with Fabric8 and OpenShift on your laptop.
 
@@ -11,7 +11,7 @@ First clone the [fabric8 installer git repository](https://github.com/fabric8io/
 
 ```
 git clone https://github.com/fabric8io/fabric8-installer.git
-cd fabric8-installer/vagrant/openshift-latest
+cd fabric8-installer/vagrant/openshift
 ```
 
 ### Prepare Vargant
