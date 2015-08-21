@@ -14,10 +14,14 @@ git clone https://github.com/fabric8io/fabric8-installer.git
 cd fabric8-installer/vagrant/openshift
 ```
 
-### Prepare Vargant
+### Prepare Vagrant
 
 The next steps are specific for different operating systems. They are needed to allow easy access to 
 dynamically generated OpenShift routes. These steps are needed only once.
+
+Some additional vagrant plugins are required to provide additional features like : 
+* Plugin [landrush](https://github.com/phinze/landrush) : provides a simple dns server for vagrant guests
+* Plugin [host-manager](https://github.com/smdahlen/vagrant-hostmanager) : manages the /etc/hosts file on guests within a multi-machine environment
 
 #### Linux
 
