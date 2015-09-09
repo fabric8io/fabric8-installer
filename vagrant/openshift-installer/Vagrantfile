@@ -121,9 +121,17 @@ Now waiting for the fabric8 pod to download and start Running....
 --------------------------------------------------------------
 
 Downloading docker images...
+
 EOT
 
 until oc get pods -l component=console,provider=fabric8  | grep -m 1 "Running"; do sleep 1 ; done
+
+echo "Fabric8 console is now running. Waiting for the Openshift Router to start..."
+
+# create the router
+oadm router --create --credentials=/var/lib/openshift/openshift.local.config/master/openshift-router.kubeconfig --service-account=router
+
+until oc get pods -l deploymentconfig=router,router=router  | grep -m 1 "Running"; do sleep 1 ; done
 
 cat <<EOT
 
@@ -142,7 +150,10 @@ When you first open your browser Chrome will say:
 
    Your connection is not private
 
-* Don't panic!
+Don't panic! There is more help on using the console here and dealing with the self signed certificates:
+
+    http://fabric8.io/guide/getStarted/browserCertificates.html
+
 * Click on the small 'Advanced' link on the bottom left
 * Now click on the link that says 'Proceed to fabric8.vagrant.f8 (unsafe)' bottom left
 * Now the browser should redirect to the login page. Enter admin/admin
@@ -151,19 +162,36 @@ When you first open your browser Chrome will say:
 
 To install more applications click the Run... button on the Apps tab.
 
+
+--------------------------------------------------------------
+Downloading docker images
+--------------------------------------------------------------
+
+We have found it common in docker in vagrant for it to have trouble concurrently downloading docker images.
+
+You can pre-load docker images in your VM via:
+
+    vagrant ssh
+    sudo bash
+    gofabric8 pull cdelivery
+
+Where the last parameter is the name of the template (app) you wish to be able to run. You'll then have all the docker images downloaded so things will startup really fast.
+
+
 We love feedback: http://fabric8.io/community/
 Have fun!
 
+--------------------------------------------------------------
 Now open the fabric8 console at:
 
     http://fabric8.vagrant.f8/
 
+Help on using the console:
+
+    http://fabric8.io/guide/getStarted/browserCertificates.html
 --------------------------------------------------------------
 
 EOT
-
-# create the router
-oadm router --create --credentials=/var/lib/openshift/openshift.local.config/master/openshift-router.kubeconfig --service-account=router
 
 # now lets create the registry
 oadm registry --create --credentials=/var/lib/openshift/openshift.local.config/master/openshift-registry.kubeconfig
