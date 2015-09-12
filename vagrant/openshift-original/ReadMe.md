@@ -2,8 +2,6 @@
 
 This is the fastest way to get going with Fabric8 and OpenShift on your laptop.
 
-This Vagrant image uses the [gofabric8](https://github.com/fabric8io/gofabric8) installer to install and configure Fabric8 on a vanilla OpenShift.
-
 ### Download and Install
 
 * Download and install [VirtualBox](https://www.virtualbox.org/wiki/Downloads) 
