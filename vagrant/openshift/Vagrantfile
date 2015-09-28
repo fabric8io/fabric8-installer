@@ -172,7 +172,7 @@ You can pre-load docker images in your VM via:
 
     vagrant ssh
     sudo bash
-    gofabric8 pull cdelivery
+    gofabric8 pull cd-pipeline
 
 Where the last parameter is the name of the template (app) you wish to be able to run. You'll then have all the docker images downloaded so things will startup really fast.
 
