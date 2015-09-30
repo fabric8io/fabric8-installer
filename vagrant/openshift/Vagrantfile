@@ -172,7 +172,7 @@ You can pre-load docker images in your VM via:
 
     vagrant ssh
     sudo bash
-    gofabric8 pull cdelivery
+    gofabric8 pull cd-pipeline
 
 Where the last parameter is the name of the template (app) you wish to be able to run. You'll then have all the docker images downloaded so things will startup really fast.
 
@@ -270,14 +270,14 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   config.vm.hostname = "vagrant." + $tld
 
   config.vm.provider "virtualbox" do |v|
-    v.memory = 6096
+    v.memory = 4096
     v.cpus = 2
     v.customize ["modifyvm", :id, "--natdnshostresolver1", "on"]
   end
 
   config.vm.provider :libvirt do |v|
     v.cpus = 2
-    v.memory = 6096
+    v.memory = 4096
   end
 
   if $windows
