@@ -263,7 +263,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   end
 
   config.vm.box = "jimmidyson/centos-7.1"
-  config.vm.box_version = "= 1.2.1"
+  config.vm.box_version = "= 1.2.2"
 
   config.vm.network "private_network", ip: "172.28.128.4"
 
