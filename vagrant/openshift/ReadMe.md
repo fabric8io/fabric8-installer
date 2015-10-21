@@ -27,10 +27,10 @@ Some additional vagrant plugins are required to provide additional features like
 
 #### Linux
 
-* Install the Vagrant plugin `vagrant-hostmanager`
+* Install the Vagrant plugin `landrush`
 
 ````
-vagrant plugin install vagrant-hostmanager
+vagrant plugin install landrush
 ````
 
 * Install `dnsmasq` so that all requests to `*.vagrant.f8` get resolved to the Vagrant VM's IP.
