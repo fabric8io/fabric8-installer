@@ -1,0 +1,21 @@
+- name: "Build hosts file"
+  lineinfile:
+    dest=/etc/hosts
+    regexp=".*{{ item }}$"
+    line="{{ hostvars[item].ansible_default_ipv4.address }} {{item}}"
+    state=present
+  when: hostvars[item].ansible_default_ipv4.address is defined
+  with_items: groups['all']
+- name: "Remove hostname from localhost line"
+  replace:
+    dest=/etc/hosts
+    regexp="{{ item }} localhost?"
+    replace="localhost"
+  when: hostvars[item].ansible_default_ipv4.address is defined
+  with_items: groups['all']
+- name: "Update resolv.conf"
+  copy: src=../files/resolv.conf dest=/etc/resolv.conf owner=root group=root mode=0644
+- name: Add ssh config
+  copy: src=../files/sshconfig dest=/root/.ssh/config owner=root group=root mode=0644
+- replace: dest=/root/.ssh/config regexp='^Host$' replace='Host {{ fabric8_hostname_prefix }}-master'
+- replace: dest=/root/.ssh/config regexp='Hostname' replace='Hostname {{ fabric8_hostname_prefix }}-master'

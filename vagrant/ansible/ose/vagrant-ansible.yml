@@ -1,0 +1,19 @@
+# install steps taken from https://access.redhat.com/articles/1519093
+- hosts: all
+  sudo: yes
+  tasks:
+    - include_vars: config.yml
+    - include: ../global/setupConfigFiles.yml
+    - include: ../global/subscribe.yml
+    - include: ../global/dependencies.yml
+    - include: ../global/ansible.yml
+    - include: ../global/configureDocker.yml
+    - name: Run playbook
+      shell: ansible-playbook /root/openshift-ansible/playbooks/byo/config.yml
+    - include: ../global/setupRoles.yml
+      shell: oadm policy add-cluster-role-to-user cluster-admin admin
+    - name: "Deploy router"
+      shell: oadm router router --replicas=1 --credentials='/etc/openshift/master/openshift-router.kubeconfig'  --service-account=router
+    - name: "Deploy registry"
+      shell: oadm registry --config=/etc/openshift/master/admin.kubeconfig --credentials=/etc/openshift/master/openshift-registry.kubeconfig --latest-images=true
+    - include: ../global/fabric8.yml

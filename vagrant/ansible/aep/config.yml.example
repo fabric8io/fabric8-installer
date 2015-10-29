@@ -1,0 +1,20 @@
+os_username:
+os_password:
+os_tenant:
+os_auth_url:
+os_region_name:
+os_ssh_key_name:
+os_flavor:
+os_image:
+os_security_groups:
+  - "default"
+os_floating_ip_pool:
+os_floating_ip:
+network_ref:
+rhn_username:
+rhn_password:
+rhn_pood_id:
+fabric8_installer_link:
+fabric8_domain:
+fabric8_hostname_prefix:
+deployment_type: atomic-enterprise | enterprise | origin

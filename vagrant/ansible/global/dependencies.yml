@@ -1,0 +1,9 @@
+- name: "Install dependencies"
+  yum: pkg={{item}} state=installed
+  with_items:
+    - vim-enhanced
+    - net-tools
+    - bind-utils
+    - tmux
+    - git
+    - docker

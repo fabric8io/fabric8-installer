@@ -1,0 +1,16 @@
+- name: "Install AEP EPEL Repository"
+  yum: name=http://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm state=installed
+- name: "Enable repo"
+  shell: sed -i -e "s/^enabled=1/enabled=0/" /etc/yum.repos.d/epel.repo
+- name: "Install Ansible"
+  yum: name=ansible enablerepo=epel
+- name: "Clone openshift-ansible"
+  shell: rm -rf /root/openshift-ansible && git clone https://github.com/openshift/openshift-ansible.git /root/openshift-ansible
+- name: Configure ansible hosts
+  copy: src=../files/ansiblehosts dest=/etc/ansible/hosts owner=root group=root mode=0644
+- replace: dest=/etc/ansible/hosts regexp='DOMAIN' replace='{{ fabric8_domain }}'
+- replace: dest=/etc/ansible/hosts regexp='HOSTNAME' replace='{{ fabric8_hostname_prefix }}-master'
+- replace: dest=/etc/ansible/hosts regexp='DEPLOYMENT' replace='{{ deployment_type }}'
+- replace: dest=/etc/ansible/hosts regexp='PUBLIC_IP' replace='{{ os_floating_ip }}'
+- name: Create SSH keys and access for Ansible
+  shell: ssh-keygen -t rsa -N "" -f ~/.ssh/id_rsa && cat ~/.ssh/id_rsa.pub >> ~/.ssh/authorized_keys

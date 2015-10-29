@@ -1,0 +1,21 @@
+# install steps taken from https://access.redhat.com/articles/1519093
+- hosts: all
+  sudo: yes
+  tasks:
+    - include_vars: config.yml
+    - include: ../global/setupConfigFiles.yml
+    - include: ../global/subscribe.yml
+    - include: ../global/dependencies.yml
+    - name: "Setup AEP EPEL Repository"
+      shell: curl -o /etc/yum.repos.d/atomic-enterprise.repo http://mirror.ops.rhcloud.com/atomic/mirror/.atomic-enterprise-early-2/atomic-enterprise.repo
+    - include: ../global/ansible.yml
+    - replace: dest=/etc/ansible/hosts regexp='.oreg_url=.*' replace='oreg_url=registry.access.redhat.com/aos3/aos-${component}:${version}'
+    - include: ../global/configureDocker.yml
+    - name: Run playbook
+      shell: ansible-playbook /root/openshift-ansible/playbooks/byo/config.yml
+    - include: ../global/setupRoles.yml
+    - name: "Deploy router"
+      shell: oadm router router --replicas=1 --credentials='/etc/origin/master/openshift-router.kubeconfig' --service-account=router --images='registry.access.redhat.com/aos3/aos-${component}:${version}'
+    - name: "Deploy registry"
+      shell: oadm registry --config=/etc/origin/master/admin.kubeconfig --credentials=/etc/origin/master/openshift-registry.kubeconfig  --latest-images=true --images='registry.access.redhat.com/aos3/aos-${component}:${version}'
+    - include: ../global/fabric8.yml

@@ -1,0 +1,8 @@
+- name: "Register"
+  redhat_subscription: state=present username={{ rhn_username }} password={{ rhn_password }} autosubscribe=true
+- name: "Manually attach to pool id as ansible support not working"
+  shell: subscription-manager attach --pool={{ rhn_pood_id }}
+- name: "Disable all repositories"
+  shell: subscription-manager repos --disable="*"
+- name: "Enable Atomic Enterprise Platform repositories"
+  shell: subscription-manager repos --enable="rhel-7-server-rpms" --enable="rhel-7-server-extras-rpms" --enable="rhel-7-server-optional-rpms" --enable="rhel-7-server-ose-3.0-rpms"

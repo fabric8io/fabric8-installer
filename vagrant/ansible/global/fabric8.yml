@@ -1,0 +1,8 @@
+- name: "Get fabric8 installer"
+  shell: mkdir /tmp/gofabric8 && curl --retry 999 --retry-max-time 0  -sSL {{ fabric8_installer_link }} | tar xzv -C /tmp/gofabric8 && chmod +x /tmp/gofabric8/gofabric8 && mv /tmp/gofabric8/* /usr/bin/
+- name: "OC login"
+  shell: oc login https://{{ fabric8_domain }}:8443 -p admin -u admin
+- name: "Install fabric8"
+  shell: gofabric8 deploy -y -s https://{{ fabric8_domain }}:8443 --domain={{ fabric8_domain }} && gofabric8 secrets -y
+- name: "Get common fabric8 docker images"
+  shell: gofabric8 pull cd-pipeline
