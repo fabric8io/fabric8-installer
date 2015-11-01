@@ -12,9 +12,9 @@
       shell: ansible-playbook /root/openshift-ansible/playbooks/byo/config.yml
     - include: ../global/setupRoles.yml
     - name: "Restart node service as sometimes it's not ready"
-      service: name=openshift-node state=restarted
+      service: name=origin-node state=restarted
     - name: "Deploy router"
-      shell: oadm router router --replicas=1 --credentials='/etc/openshift/master/openshift-router.kubeconfig'  --service-account=router
+      shell: oadm router router --replicas=1 --credentials='/etc/origin/master/openshift-router.kubeconfig'  --service-account=router
     - name: "Deploy registry"
-      shell: oadm registry --config=/etc/openshift/master/admin.kubeconfig --credentials=/etc/openshift/master/openshift-registry.kubeconfig --latest-images=true
+      shell: oadm registry --config=/etc/origin/master/admin.kubeconfig --credentials=/etc/origin/master/openshift-registry.kubeconfig --latest-images=true
     - include: ../global/fabric8.yml

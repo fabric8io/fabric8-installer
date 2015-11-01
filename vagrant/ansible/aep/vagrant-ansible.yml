@@ -14,6 +14,8 @@
     - name: Run playbook
       shell: ansible-playbook /root/openshift-ansible/playbooks/byo/config.yml
     - include: ../global/setupRoles.yml
+    - name: "Restart node service as sometimes it's not ready"
+      service: name=atomic-openshift-node state=restarted
     - name: "Deploy router"
       shell: oadm router router --replicas=1 --credentials='/etc/origin/master/openshift-router.kubeconfig' --service-account=router --images='registry.access.redhat.com/aos3/aos-${component}:${version}'
     - name: "Deploy registry"

@@ -27,7 +27,7 @@ deployment_type=DEPLOYMENT
 #oreg_url=rcm-img-docker01.build.eng.bos.redhat.com:5001/openshift3/ose-${component}:${version}
 
 # Pre-release Dev puddle repo
-#openshift_additional_repos=[{'id': 'ose-devel', 'name': 'ose-devel', 'baseurl': 'http://buildvm-devops.usersys.redhat.com/puddle/build/OpenShiftEnterprise/3.0/latest/RH7-RHOSE-3.0/$basearch/os', 'enabled': 1, 'gpgcheck': 0}]
+#openshift_additional_repos=[{'id': 'ose-devel', 'name': 'ose-devel', 'baseurl': 'http://buildvm-devops.usersys.redhat.com/puddle/build/AtomicOpenShift/3.1/2015-10-30.3/RH7-RHAOS-3.1/x86_64/os', 'enabled': 1, 'gpgcheck': 0}]
 
 # Pre-release Errata puddle repo
 #openshift_additional_repos=[{'id': 'ose-devel', 'name': 'ose-devel', 'baseurl': 'http://buildvm-devops.usersys.redhat.com/puddle/build/OpenShiftEnterpriseErrata/3.0/latest/RH7-RHOSE-3.0/$basearch/os', 'enabled': 1, 'gpgcheck': 0}]
@@ -42,7 +42,7 @@ deployment_type=DEPLOYMENT
 openshift_master_identity_providers=[{'name': 'allow_all', 'login': 'true', 'challenge': 'true', 'kind': 'AllowAllPasswordIdentityProvider'}]
 
 # Configure Fluentd
-#use_fluentd=true
+use_fluentd=true
 
 # Enable cockpit
 #osm_use_cockpit=true
