@@ -128,9 +128,14 @@ until oc get pods -l component=console,provider=fabric8  | grep -m 1 "Running"; 
 echo "Fabric8 console is now running. Waiting for the Openshift Router to start..."
 
 # create the router
-oadm router --create --credentials=/var/lib/openshift/openshift.local.config/master/openshift-router.kubeconfig --service-account=router
+oadm router --create --credentials=/var/lib/openshift/openshift.local.config/master/openshift-router.kubeconfig --service-account=router --expose-metrics
 
 until oc get pods -l deploymentconfig=router,router=router  | grep -m 1 "Running"; do sleep 1 ; done
+
+oc annotate service router prometheus.io/port=9101
+oc annotate service router prometheus.io/scheme=http
+oc annotate service router prometheus.io/path=/metrics
+oc annotate service router prometheus.io/scrape=true
 
 cat <<EOT
 
