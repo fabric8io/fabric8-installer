@@ -280,14 +280,11 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     v.customize ["modifyvm", :id, "--natdnshostresolver1", "on"]
   end
 
-  config.vm.provider :libvirt do |v|
+  config.vm.provider :libvirt do |v, override|
     v.cpus = 2
     v.memory = 4096
-  end
 
-  if $windows
-  else
-    # config.vm.synced_folder ".", "/jenkins-workspace", type: "nfs"
+    override.vm.allowed_synced_folder_types = [:nfs, :rsync]
   end
 
   config.vm.provision "shell", inline: $provisionScript, keep_color: true
