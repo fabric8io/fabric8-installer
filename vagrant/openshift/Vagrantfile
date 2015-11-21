@@ -7,6 +7,10 @@ VAGRANTFILE_API_VERSION = "2"
 
 Vagrant.require_version ">= 1.7.2"
 
+# for running the CD Pipeline we recommend at least 8000 for memory!
+$vmMemory = ENV['FABRIC8_VM_MEMORY'] || 4096
+puts "Using VM Memory of #{$vmMemory}Mb - NOTE we recommend at least 8000Mb for running 'cd-pipeline'"
+
 $provisionScript = <<SCRIPT
 # download gofabric8
 mkdir /tmp/gofabric8
@@ -123,7 +127,7 @@ Downloading docker images...
 
 EOT
 
-until oc get pods -l component=console,provider=fabric8  | grep -m 1 "Running"; do sleep 1 ; done
+until oc get pods -l project=console,provider=fabric8  | grep -m 1 "Running"; do sleep 1 ; done
 
 echo "Fabric8 console is now running. Waiting for the Openshift Router to start..."
 
@@ -275,14 +279,14 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   config.vm.hostname = "vagrant." + $tld
 
   config.vm.provider "virtualbox" do |v|
-    v.memory = 4096
+    v.memory = $vmMemory
     v.cpus = 2
     v.customize ["modifyvm", :id, "--natdnshostresolver1", "on"]
   end
 
   config.vm.provider :libvirt do |v, override|
     v.cpus = 2
-    v.memory = 4096
+    v.memory = $vmMemory
 
     override.vm.allowed_synced_folder_types = [:nfs, :rsync]
   end
