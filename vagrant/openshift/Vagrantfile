@@ -214,7 +214,7 @@ metadata:
 spec:
   containers:
   - name: fluentd-elasticsearch
-    image: fabric8/fluentd-kubernetes:v1.7
+    image: fabric8/fluentd-kubernetes:v1.8
     securityContext:
       privileged: true
     resources:
