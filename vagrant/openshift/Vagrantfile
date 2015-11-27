@@ -15,12 +15,19 @@ $provisionScript = <<SCRIPT
 # download gofabric8
 mkdir /tmp/gofabric8
 
+# TODO until git and unzip are in our base image lets install them
+yum install -y git unzip
+
+# install our fork for helm with support for OpenShift Templates and Secrets
+curl --retry 999 --retry-max-time 0  -sSL https://bintray.com/artifact/download/fabric8io/helm-ci/helm-v0.1.0%2B30d5946-linux-amd64.zip > helm.zip
+unzip helm.zip
+mv helm /bin/helm
+
 # TODO for now lets use the latest build until we've a release...
 #curl --retry 999 --retry-max-time 0  -sSL https://github.com/fabric8io/gofabric8/releases/download/v0.3/gofabric8-0.3-linux-amd64.tar.gz | tar xzv -C /tmp/gofabric8
 curl --retry 999 --retry-max-time 0  -sSL https://fabric8-ci.fusesource.com/job/gofabric8/lastSuccessfulBuild/artifact/src/github.com/fabric8io/gofabric8/build/gofabric8 > /tmp/gofabric8/gofabric8
 chmod +x /tmp/gofabric8/gofabric8
 mv /tmp/gofabric8/* /usr/bin/
-
 
 # setup openshift
 if [ -d '/var/lib/openshift' ]; then
@@ -31,6 +38,12 @@ mkdir /tmp/openshift
 echo "Downloading OpenShift binaries..."
 curl --retry 999 --retry-max-time 0  -sSL https://github.com/openshift/origin/releases/download/v1.1/openshift-origin-v1.1-ac7a99a-linux-amd64.tar.gz | tar xzv -C /tmp/openshift
 mv /tmp/openshift/* /usr/bin/
+
+
+# lets setup helm with our repo
+helm update
+helm repo add fabric8 https://github.com/fabric8io/charts.git
+
 
 mkdir -p /var/lib/openshift/openshift.local.manifests
 
