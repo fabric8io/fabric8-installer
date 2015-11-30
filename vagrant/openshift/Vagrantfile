@@ -19,7 +19,7 @@ mkdir /tmp/gofabric8
 yum install -y git unzip
 
 # install our fork for helm with support for OpenShift Templates and Secrets
-curl --retry 999 --retry-max-time 0  -sSL https://bintray.com/artifact/download/fabric8io/helm-ci/helm-v0.1.0%2B30d5946-linux-amd64.zip > helm.zip
+curl --retry 999 --retry-max-time 0  -sSL https://bintray.com/artifact/download/fabric8io/helm-ci/helm-v0.1.0%2B825f5ef-linux-amd64.zip > helm.zip
 unzip helm.zip
 mv helm /bin/helm
 
@@ -48,6 +48,7 @@ helm repo add fabric8 https://github.com/fabric8io/charts.git
 mkdir -p /var/lib/openshift/openshift.local.manifests
 
 pushd /var/lib/openshift
+
 /usr/bin/openshift start --master=172.28.128.4 --cors-allowed-origins=.* --hostname=172.28.128.4 --write-config=/var/lib/openshift/openshift.local.config
 cat <<EOF >> /var/lib/openshift/openshift.local.config/node-172.28.128.4/node-config.yaml
 kubeletArguments:
@@ -69,6 +70,9 @@ WorkingDirectory=/var/lib/openshift/
 [Install]
 WantedBy=multi-user.target
 EOF
+
+# lets configure the routing subdomain: https://docs.openshift.com/enterprise/3.0/install_config/install/deploy_router.html#customizing-the-default-routing-subdomain
+sed -i "s|subdomain: router.default.svc.cluster.local|subdomain: vagrant.f8|" /var/lib/openshift/openshift.local.config/master/master-config.yaml
 
 systemctl daemon-reload
 systemctl enable openshift.service
