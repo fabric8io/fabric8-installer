@@ -1,4 +1,4 @@
-# coding: utf-8
+# coding: utf-8 
 # -*- mode: ruby -*-
 # vi: set ft=ruby :
 
@@ -9,9 +9,19 @@ Vagrant.require_version ">= 1.7.2"
 
 # for running the CD Pipeline we recommend at least 8000 for memory!
 $vmMemory = ENV['FABRIC8_VM_MEMORY'] || 4096
-puts "Using VM Memory of #{$vmMemory}Mb - NOTE we recommend at least 8000Mb for running 'cd-pipeline'"
 
 $provisionScript = <<SCRIPT
+# Check memory
+VM_MEMORY="#{$vmMemory}"
+echo "=========================================================================="
+echo "Using VM Memory of ${VM_MEMORY} MB"
+if [ ${VM_MEMORY} -lt 8192 ]; then
+  echo "NOTE: We recommend at least 8192 MB for running the 'cd-pipeline'."
+  echo "      You can specify this with an environment variable FABRIC8_VM_MEMORY"
+  echo "      E.g. when creating the VM with : 'FABRIC8_VM_MEMORY=8192 vagrant up'"
+fi
+echo "=========================================================================="
+
 # download gofabric8
 mkdir /tmp/gofabric8
 
@@ -285,6 +295,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   else
     config.landrush.enabled = true
     config.landrush.tld = $tld
+    config.landrush.guest_redirect_dns = false
     config.landrush.host_ip_address = '172.28.128.4'
   end
 
@@ -311,3 +322,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   config.vm.provision "shell", inline: $provisionScript, keep_color: true
 
 end
+
+# Tip:
+# - Add extra insecure registry:
+# sudo perl -p -i -e 's|(^ExecStart=.*--insecure-registry.*)|$1 --insecure-registry=10.0.0.0/8|' /etc/systemd/system/docker.service.d/override.conf && sudo systemctl daemon-reload && sudo service docker restart
