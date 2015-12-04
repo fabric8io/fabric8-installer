@@ -1,4 +1,4 @@
-# coding: utf-8 
+# coding: utf-8
 # -*- mode: ruby -*-
 # vi: set ft=ruby :
 
@@ -24,9 +24,6 @@ echo "==========================================================================
 
 # download gofabric8
 mkdir /tmp/gofabric8
-
-# TODO until git and unzip are in our base image lets install them
-yum install -y git unzip
 
 # install our fork for helm with support for OpenShift Templates and Secrets
 curl --retry 999 --retry-max-time 0  -sSL https://bintray.com/artifact/download/fabric8io/helm-ci/helm-v0.1.0%2B825f5ef-linux-amd64.zip > helm.zip
