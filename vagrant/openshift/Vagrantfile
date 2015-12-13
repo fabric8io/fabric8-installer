@@ -275,7 +275,7 @@ end
 Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
   # Top level domain
-  $tld = "f8"
+  $tld = "vagrant.f8"
 
   # Landrush is used together with wildcard dns entries to map all
   # routes to the proper services
