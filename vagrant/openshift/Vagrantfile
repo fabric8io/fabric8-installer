@@ -298,7 +298,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
   config.vm.network "private_network", ip: "172.28.128.4"
 
-  config.vm.hostname = "vagrant." + $tld
+  config.vm.hostname = $tld
 
   config.vm.provider "virtualbox" do |v|
     v.memory = $vmMemory
