@@ -253,6 +253,8 @@ spec:
     env:
     - name: ELASTICSEARCH_HOST
       value: elasticsearch
+    - name: ELASTICSEARCH_PORT
+      value: 9200
   volumes:
   - name: varlog
     hostPath:
