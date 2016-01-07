@@ -1,0 +1,95 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+require "yaml"
+
+### This is a new provider, different then cloudbau's.
+### RUN: vagrant plugin uninstall vagrant-openstack-plugin"
+### Then RUN: "vagrant plugin install vagrant-openstack-provider"
+require 'vagrant-openstack-provider'
+
+$num_nodes = (ENV['NUM_NODES'] || 0).to_i
+ansible_tags = ENV['ANSIBLE_TAGS']
+
+VAGRANTFILE_API_VERSION = "2"
+
+# Openstack providers are best used with latest versions.
+Vagrant.require_version ">= 1.7"
+
+Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
+  # this crap is to make it not fail if the file doesn't exist (which is ok if we are using a different provisioner)
+  __filename = File.join(File.dirname(__FILE__), "config.yml")
+  if File.exist?(__filename)
+    _config = YAML.load(File.open(__filename, File::RDONLY).read)
+  else
+    _config = Hash.new("")
+    _config['security_group'] = []
+  end
+
+  # By default, Vagrant 1.7+ automatically inserts a different
+  # insecure keypair for each new VM created. The easiest way
+  # to use the same keypair for all the machines is to disable
+  # this feature and rely on the legacy insecure key.
+  config.ssh.insert_key = false
+
+  config.vm.provider "openstack"
+
+  def set_openstack(os, config, n)
+    # common config
+    config.vm.box = "dummy"
+    config.vm.box_url = "https://github.com/cloudbau/vagrant-openstack-plugin/raw/master/dummy.box"
+
+    config.ssh.username = "cloud-user"
+    config.ssh.private_key_path = "~/.ssh/id_rsa"
+    config.ssh.pty = true
+    config.vm.boot_timeout = 60*10
+
+    # this crap is to make it not fail if the file doesn't exist (which is ok if we are using a different provisioner)
+    __filename = File.join(File.dirname(__FILE__), "config.yml")
+    if File.exist?(__filename)
+      _config = YAML.load(File.open(__filename, File::RDONLY).read)
+    else
+      _config = Hash.new("")
+      _config['security_group'] = []
+    end
+
+    ### The below parameters need to be modified per your openstack instance.
+    os.username         = _config['os_username']
+    os.password         = _config['os_password']
+    os.tenant_name      = _config['os_tenant']
+    os.keypair_name     = _config['os_ssh_key_name']
+    os.openstack_auth_url = _config['os_auth_url']
+    os.region           = _config['os_region_name']
+    os.floating_ip   = _config['os_floating_ip']
+    os.flavor           = _config['os_flavor']
+    os.image            = _config['os_image']
+    os.security_groups  = _config['os_security_groups']
+    os.networks         = [{id: _config['os_network_ref']}]
+    os.server_name      = n.vm.hostname
+  end
+
+  def set_provider(n)
+    n.vm.provider :openstack do |os, override|
+      set_openstack(os, override, n)
+    end
+  end
+
+  config.vm.synced_folder ".", "/tmp/vagrant", disabled: true
+
+  config.vm.define _config['fabric8_hostname_prefix'] do |n|
+    name = _config['fabric8_hostname_prefix']
+    n.vm.hostname = name
+    set_provider(n)
+
+    config.vm.provision "shell", inline: "true"
+    if ansible_tags.nil?
+      # This set up the vagrant hosts before we run the main playbook
+      # Today this just creates /etc/hosts so machines can talk via their
+      # 'internal' IPs instead of the openstack public ip.
+      n.vm.provision :ansible do |ansible|
+        ansible.playbook = "./vagrant-ansible.yml"
+        ansible.limit = "all" #otherwise the metadata wont be there for ipv4?
+        ansible.raw_ssh_args = ['-o ControlMaster=no']
+      end
+    end
+  end
+end

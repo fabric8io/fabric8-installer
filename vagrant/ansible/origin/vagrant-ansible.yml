@@ -11,6 +11,7 @@
     - name: Run playbook
       shell: ansible-playbook /root/openshift-ansible/playbooks/byo/config.yml
     - include: ../global/setupRoles.yml
+    - include: ../global/enableLogging.yml
     - name: "Restart node service as sometimes it's not ready"
       service: name=origin-node state=restarted
     - name: "Deploy router"

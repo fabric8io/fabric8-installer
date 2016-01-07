@@ -1,0 +1,4 @@
+- name: Create resources directory
+  shell: mkdir -p /var/lib/origin/openshift.local.manifests
+- name: Add fluentd config
+  copy: src=../files/fluentd.yaml dest=/var/lib/origin/openshift.local.manifests/fluentd.yaml owner=root group=root mode=0644

@@ -1,0 +1,16 @@
+# install steps taken from https://access.redhat.com/articles/1519093
+- hosts: all
+  sudo: yes
+  tasks:
+    - include_vars: config.yml
+    - name: "Register"
+      redhat_subscription: state=present username={{ rhn_username }} password={{ rhn_password }} autosubscribe=true
+    - name: "Manually attach to pool id as ansible support not working"
+      shell: subscription-manager attach --pool={{ rhn_pood_id }}
+    - name: Get add-user-from-github.sh script
+      copy: src=add-user-from-github.sh dest=/root/add-user-from-github.sh owner=root group=root mode=777
+    - name: Get add-user-from-github.sh script
+      copy: src=add-fabric8-team.sh dest=/root/add-fabric8-team.sh owner=root group=root mode=777
+    - name: Add fabric8 team public ssh keys
+      shell: /root/add-fabric8-team.sh
+    - lineinfile: "dest=/etc/sudoers state=present regexp='^%wheel' line='%wheel ALL=(ALL) NOPASSWD: ALL'"

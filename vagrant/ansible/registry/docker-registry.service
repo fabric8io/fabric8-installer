@@ -1,0 +1,17 @@
+[Unit]
+Description=fabric8 Docker Registry
+After=docker.service
+Requires=docker.service
+
+[Service]
+MemoryAccounting=yes
+MemoryLimit=800M
+RestartSec=10s
+ExecStartPre=-/usr/bin/docker kill registry
+ExecStartPre=-/usr/bin/docker rm registry
+ExecStart=/bin/sh -c "/usr/bin/docker run --name registry -e GUNICORN_OPTS=[\"--preload\"] -e DISABLE_TOKEN_AUTH=true -e SETTINGS_FLAVOUR=local -e SEARCH_BACKEND=sqlalchemy -e STORAGE_PATH=/mnt/registry -v /var/docker/registry:/mnt/registry -p 5000:5000 registry:0.9.1"
+ExecStop=-/usr/bin/docker kill registry
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,16 @@
+Description=fabric8 Docker Registry web UI
+After=docker.service
+Requires=docker.service
+
+[Service]
+MemoryAccounting=yes
+MemoryLimit=100M
+RestartSec=30s
+ExecStartPre=-/usr/bin/docker kill registry-ui
+ExecStartPre=-/usr/bin/docker rm registry-ui
+ExecStart=/usr/bin/docker run --name registry-ui -v /var/docker/registry:/var/lib/docker-registry localhost:5000/ExecStart=/usr/bin/docker run --name registry-ui -v /var/docker/registry:/var/lib/docker-registry ce-registry.usersys.redhat.com/ce_ci/registry-ui:latest
+ExecStop=-/usr/bin/docker kill registry-ui
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target
