@@ -43,7 +43,7 @@ fi
 
 mkdir /tmp/openshift
 echo "Downloading OpenShift binaries..."
-curl --retry 999 --retry-max-time 0  -sSL https://github.com/openshift/origin/releases/download/v1.1.2/openshift-origin-server-v1.1.2-2711160-linux-64bit.tar.gz | tar xzv -C /tmp/openshift
+curl --retry 999 --retry-max-time 0  -sSL https://github.com/openshift/origin/releases/download/v1.1.3/openshift-origin-server-v1.1.3-cffae05-linux-64bit.tar.gz | tar xzv -C /tmp/openshift
 mv /tmp/openshift/openshift-origin-*/* /usr/bin/
 
 
