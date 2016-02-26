@@ -93,7 +93,7 @@ while true; do
 done
 
 
-oadm policy add-cluster-role-to-user cluster-admin admin
+oc adm policy add-cluster-role-to-user cluster-admin admin
 
 gofabric8 deploy -y
 gofabric8 secrets -y
@@ -156,9 +156,9 @@ until oc get pods -l project=console,provider=fabric8  | grep -m 1 "Running"; do
 echo "Fabric8 console is now running. Waiting for the Openshift Router to start..."
 
 # create the router
-oadm router --create --credentials=/var/lib/openshift/openshift.local.config/master/openshift-router.kubeconfig --service-account=router --expose-metrics
+oc adm router --create --credentials=/var/lib/openshift/openshift.local.config/master/openshift-router.kubeconfig --service-account=router --expose-metrics
 
-until oc get pods -l deploymentconfig=router,router=router  | grep -m 1 "Running"; do sleep 1 ; done
+until oc get pods -l openshift.io/deployer-pod-for.name=router-1 | grep -m 1 "Running"; do sleep 1 ; done
 
 oc annotate service router prometheus.io/port=9101
 oc annotate service router prometheus.io/scheme=http
@@ -226,7 +226,7 @@ Help on using the console:
 EOT
 
 # now lets create the registry
-oadm registry --create --credentials=/var/lib/openshift/openshift.local.config/master/openshift-registry.kubeconfig
+oc adm registry --create --credentials=/var/lib/openshift/openshift.local.config/master/openshift-registry.kubeconfig
 
 
 # And install the node-local fluentd pod
