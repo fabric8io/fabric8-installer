@@ -241,7 +241,7 @@ metadata:
 spec:
   containers:
   - name: fluentd-elasticsearch
-    image: fabric8/fluentd-kubernetes:v1.9
+    image: fabric8/fluentd-kubernetes:v1.10
     securityContext:
       privileged: true
     resources:
@@ -299,7 +299,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   end
 
   config.vm.box = "jimmidyson/centos-7.1"
-  config.vm.box_version = "= 1.2.6"
+  config.vm.box_version = "= 1.3.0"
 
   config.vm.network "private_network", ip: "172.28.128.4"
 
