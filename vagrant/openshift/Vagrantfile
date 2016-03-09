@@ -199,9 +199,7 @@ To install more applications click the Run... button on the Apps tab.
 Downloading docker images
 --------------------------------------------------------------
 
-We have found it common in docker in vagrant for it to have trouble concurrently downloading docker images.
-
-You can pre-load docker images in your VM via:
+If you want fast deployment then you can pre-load docker images in your VM via:
 
     vagrant ssh
     sudo bash
