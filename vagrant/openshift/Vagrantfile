@@ -155,6 +155,12 @@ until oc get pods -l project=console,provider=fabric8  | grep -m 1 "Running"; do
 
 echo "Fabric8 console is now running. Waiting for the Openshift Router to start..."
 
+echo "Lets pull the router docker images first"
+docker pull prom/haproxy-exporter:latest
+docker pull openshift/origin-haproxy-router:v1.1.3
+
+echo "Now lets wait for the router to start"
+
 # create the router
 oc adm router --create --credentials=/var/lib/openshift/openshift.local.config/master/openshift-router.kubeconfig --service-account=router --expose-metrics
 
