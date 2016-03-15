@@ -31,7 +31,7 @@ unzip helm.zip
 mv helm /bin/helm
 
 # TODO for now lets use the latest build until we've a release...
-curl --retry 999 --retry-max-time 0  -sSL https://github.com/fabric8io/gofabric8/releases/download/v0.3.28/gofabric8-0.3.28-linux-amd64.tar.gz | tar xzv -C /tmp/gofabric8
+curl --retry 999 --retry-max-time 0 -sSL https://github.com/fabric8io/gofabric8/releases/download/v0.4.0/gofabric8-0.4.0-linux-amd64.tar.gz | tar xzv -C /tmp/gofabric8
 #curl --retry 999 --retry-max-time 0  -sSL https://fabric8-ci.fusesource.com/job/gofabric8/lastSuccessfulBuild/artifact/src/github.com/fabric8io/gofabric8/build/gofabric8 > /tmp/gofabric8/gofabric8
 chmod +x /tmp/gofabric8/gofabric8
 mv /tmp/gofabric8/* /usr/bin/
@@ -43,14 +43,12 @@ fi
 
 mkdir /tmp/openshift
 echo "Downloading OpenShift binaries..."
-curl --retry 999 --retry-max-time 0  -sSL https://github.com/openshift/origin/releases/download/v1.1.3/openshift-origin-server-v1.1.3-cffae05-linux-64bit.tar.gz | tar xzv -C /tmp/openshift
+curl --retry 999 --retry-max-time 0 -sSL https://github.com/openshift/origin/releases/download/v1.1.4/openshift-origin-server-v1.1.4-3941102-linux-64bit.tar.gz | tar xzv -C /tmp/openshift
 mv /tmp/openshift/openshift-origin-*/* /usr/bin/
-
 
 # lets setup helm with our repo
 helm update
 helm repo add fabric8 https://github.com/fabric8io/charts.git
-
 
 mkdir -p /var/lib/openshift/openshift.local.manifests
 
@@ -231,46 +229,6 @@ EOT
 
 # now lets create the registry
 oc adm registry --create --credentials=/var/lib/openshift/openshift.local.config/master/openshift-registry.kubeconfig
-
-
-# And install the node-local fluentd pod
-cat <<'EOF' > /var/lib/openshift/openshift.local.manifests/fluentd.yaml
-apiVersion: v1
-kind: Pod
-metadata:
-  name: fluentd-elasticsearch
-  labels:
-    provider: fabric8
-    component: logging
-spec:
-  containers:
-  - name: fluentd-elasticsearch
-    image: fabric8/fluentd-kubernetes:v1.10
-    securityContext:
-      privileged: true
-    resources:
-      limits:
-        cpu: 100m
-    volumeMounts:
-    - name: varlog
-      mountPath: /var/log
-    - name: varlibdockercontainers
-      mountPath: /var/lib/docker/containers
-      readOnly: true
-    env:
-    - name: ELASTICSEARCH_HOST
-      value: elasticsearch
-    - name: ELASTICSEARCH_PORT
-      value: "9200"
-  volumes:
-  - name: varlog
-    hostPath:
-      path: /var/log
-  - name: varlibdockercontainers
-    hostPath:
-      path: /var/lib/docker/containers
-EOF
-
 
 SCRIPT
 
