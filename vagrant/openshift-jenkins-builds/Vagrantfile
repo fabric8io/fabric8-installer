@@ -275,7 +275,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   config.vm.provider "virtualbox" do |v|
     v.memory = $vmMemory
     v.cpus = 2
-    v.name = "fabric8-openshift"
+    v.name = "fabric8-openshift-jenkins"
     v.customize ["modifyvm", :id, "--natdnshostresolver1", "on"]
   end
 
