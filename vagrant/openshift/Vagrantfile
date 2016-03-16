@@ -8,7 +8,7 @@ VAGRANTFILE_API_VERSION = "2"
 Vagrant.require_version ">= 1.7.2"
 
 # for running the CD Pipeline we recommend at least 8000 for memory!
-$vmMemory = ENV['FABRIC8_VM_MEMORY'] || 4096
+$vmMemory = Integer(ENV['FABRIC8_VM_MEMORY']) || 4096
 
 $provisionScript = <<SCRIPT
 # Check memory
