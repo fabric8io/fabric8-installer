@@ -95,6 +95,7 @@ done
 
 
 oc adm policy add-cluster-role-to-user cluster-admin admin
+oc adm policy add-cluster-role-to-group cluster-reader system:serviceaccounts
 
 gofabric8 deploy -y
 gofabric8 secrets -y
