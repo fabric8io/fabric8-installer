@@ -9,6 +9,12 @@ Vagrant.require_version ">= 1.7.2"
 
 # for running the CD Pipeline we recommend at least 8000 for memory!
 $vmMemory = Integer(ENV['FABRIC8_VM_MEMORY'] || 4096)
+$vmIP = ENV['VAGRANT_VM_IP'] || '172.28.128.4'
+$vmMAC = ENV['VAGRANT_VM_MAC'] || 'AA:BB:CC:DD:EE:FF'
+$vmSimDNS = true
+if ENV['VAGRANT_SIM_DNS'] != nil
+  $vmSimDNS = ENV['VAGRANT_SIM_DNS'] == 'true'
+end
 
 $provisionScript = <<SCRIPT
 # Check memory
@@ -57,13 +63,13 @@ mkdir -p /var/lib/openshift/openshift.local.manifests
 
 pushd /var/lib/openshift
 
-/usr/bin/openshift start --master=172.28.128.4 --cors-allowed-origins=.* --hostname=172.28.128.4 --write-config=/var/lib/openshift/openshift.local.config
-cat <<EOF >> /var/lib/openshift/openshift.local.config/node-172.28.128.4/node-config.yaml
+/usr/bin/openshift start --master=#{$vmIP} --cors-allowed-origins=.* --hostname=#{$vmIP} --write-config=/var/lib/openshift/openshift.local.config
+cat <<EOF >> /var/lib/openshift/openshift.local.config/node-#{$vmIP}/node-config.yaml
 kubeletArguments:
   "read-only-port":
     - "10255"
 EOF
-sed -i 's|^podManifestConfig: null|podManifestConfig:\\n  path: /var/lib/openshift/openshift.local.manifests\\n  fileCheckIntervalSeconds: 10|' /var/lib/openshift/openshift.local.config/node-172.28.128.4/node-config.yaml
+sed -i 's|^podManifestConfig: null|podManifestConfig:\\n  path: /var/lib/openshift/openshift.local.manifests\\n  fileCheckIntervalSeconds: 10|' /var/lib/openshift/openshift.local.config/node-#{$vmIP}/node-config.yaml
 popd
 restorecon -Rv /var/lib/openshift
 
@@ -73,7 +79,7 @@ Description=OpenShift
 Requires=docker.service network.service
 After=network.service
 [Service]
-ExecStart=/usr/bin/openshift start --master-config=/var/lib/openshift/openshift.local.config/master/master-config.yaml --node-config=/var/lib/openshift/openshift.local.config/node-172.28.128.4/node-config.yaml
+ExecStart=/usr/bin/openshift start --master-config=/var/lib/openshift/openshift.local.config/master/master-config.yaml --node-config=/var/lib/openshift/openshift.local.config/node-#{$vmIP}/node-config.yaml
 WorkingDirectory=/var/lib/openshift/
 [Install]
 WantedBy=multi-user.target
@@ -107,7 +113,7 @@ cat <<EOT
 
 
 
-The OpenShift console is at: https://172.28.128.4:8443/console
+The OpenShift console is at: https://#{$vmIP}:8443/console
 
 Now we need to wait for the 'fabric8' pod to startup.
 This will take a few minutes as it downloads some docker images.
@@ -128,7 +134,7 @@ Now might be a good time to setup your host machine to work with OpenShift
 
 Now login to OpenShift via this command:
 
-   oc login https://172.28.128.4:8443
+   oc login https://#{$vmIP}:8443
 
 Then enter admin/admin for user/password.
 
@@ -251,23 +257,23 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   # Landrush is used together with wildcard dns entries to map all
   # routes to the proper services
   if $windows
-    config.hostmanager.enabled = true
-    config.hostmanager.manage_host = true
+    config.hostmanager.enabled = $vmSimDNS
+    config.hostmanager.manage_host = $vmSimDNS
     config.hostmanager.ignore_private_ip = false
     config.hostmanager.include_offline = true
 
     config.hostmanager.aliases = %w(fabric8.vagrant.f8 jenkins.vagrant.f8 gogs.vagrant.f8 nexus.vagrant.f8 hubot-web-hook.vagrant.f8 letschat.vagrant.f8 kibana.vagrant.f8 taiga.vagrant.f8 fabric8-forge.vagrant.f8)
   else
-    config.landrush.enabled = true
+    config.landrush.enabled = $vmSimDNS
     config.landrush.tld = $tld
     config.landrush.guest_redirect_dns = false
-    config.landrush.host_ip_address = '172.28.128.4'
+    config.landrush.host_ip_address = $vmIP
   end
 
   config.vm.box = "jimmidyson/centos-7.1"
   config.vm.box_version = "= 1.3.1"
 
-  config.vm.network "private_network", ip: "172.28.128.4"
+  config.vm.network "private_network", ip: $vmIP, macaddress: $vmMAC
 
   config.vm.hostname = $tld
 
@@ -283,6 +289,19 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     v.memory = $vmMemory
 
     override.vm.allowed_synced_folder_types = [:nfs, :rsync]
+  end
+
+  config.vm.provider :proxmox do |proxmox|
+      proxmox.endpoint = 'https://pve:8006/api2/json'
+      proxmox.selected_node = 'pve'
+      proxmox.user_name = 'vagrant@pam'
+      proxmox.password = 'vagrant'
+      proxmox.vm_id_range = 900..910
+      proxmox.vm_type = :qemu
+      proxmox.clone = true
+      proxmox.src_vm_id = 101
+      proxmox.qemu_nic_model = 'e1000'
+      proxmox.qemu_bridge = 'vmbr0'
   end
 
   config.vm.provision "shell", inline: $provisionScript, keep_color: true
