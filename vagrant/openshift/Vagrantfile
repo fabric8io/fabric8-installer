@@ -10,6 +10,9 @@ Vagrant.require_version ">= 1.7.2"
 # for running the CD Pipeline we recommend at least 8000 for memory!
 $vmMemory = Integer(ENV['FABRIC8_VM_MEMORY'] || 4096)
 
+# Override the default VM name appearing within VirtualBox
+$vmName = ENV['FABRIC8_VM_NAME'] || "fabric8-openshift"
+
 $provisionScript = <<SCRIPT
 # Check memory
 VM_MEMORY="#{$vmMemory}"
@@ -274,7 +277,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   config.vm.provider "virtualbox" do |v|
     v.memory = $vmMemory
     v.cpus = 2
-    v.name = "fabric8-openshift"
+    v.name = $vmName
     v.customize ["modifyvm", :id, "--natdnshostresolver1", "on"]
   end
 
