@@ -43,9 +43,9 @@ fi
 
 mkdir /tmp/openshift
 echo "Downloading OpenShift binaries..."
-curl --retry 999 --retry-max-time 0 -sSL https://fabric8-ci.fusesource.com/view/pr%20builds/job/openshift-build-config-fork/lastSuccessfulBuild/artifact/src/github.com/openshift/origin/_output/local/bin/linux/amd64/openshift > /usr/bin/openshift
-curl --retry 999 --retry-max-time 0 -sSL https://fabric8-ci.fusesource.com/view/pr%20builds/job/openshift-build-config-fork/lastSuccessfulBuild/artifact/src/github.com/openshift/origin/_output/local/bin/linux/amd64/oc > /usr/bin/oc
-chmod +x /usr/bin/{openshift,oc}
+curl --retry 999 --retry-max-time 0 -sSL https://github.com/jimmidyson/origin/releases/download/v1.1.4-jenkins-build-config/openshift-origin-server-build-config-fork-linux-64bit.tar.gz | tar xzv -C /tmp/openshift
+chmod +x /tmp/openshift/openshift-origin-server-*/{openshift,oc}
+mv /tmp/openshift/openshift-origin-server-*/{openshift,oc} /usr/bin
 
 for f in atomic-enterprise kube-apiserver kube-controller-manager kubectl kubelet kube-proxy kubernetes kube-scheduler oadm openshift-deploy openshift-docker-build openshift-router openshift-sti-build origin osadm osc; do
   ln -s /usr/bin/openshift /usr/bin/$f
