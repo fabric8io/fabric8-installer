@@ -79,6 +79,32 @@ Now startup vagrant with
 vagrant up
 ```
 
+### Debug tips
+
+`vagrant up` script, among other things, mounts some folder of the vms into your host file system.  
+It does that via `NFS`.  
+`NFS` might report errors similar to the following if it cannot connect to the vm:
+```
+==> default: Mounting NFS shared folders...
+The following SSH command responded with a non-zero exit status.
+Vagrant assumes that this means the command failed!
+
+mount -o 'vers=3,udp' 192.168.121.1:'/500GB/fabric8v2/code/fabric8-installer/vagrant/openshift' /vagrant
+
+Stdout from the command:
+
+Stderr from the command:
+
+mount.nfs: Connection timed out
+```
+A way to solve this problem is to configure your host firewall to allow the communication.  
+A simple check that you may perform to verify if you are seeing firewall related issues is this:
+```
+# valid for a systemd based Linux
+sudo systemctl stop firewalld
+```
+But the suggestion is to tune `firewalld` and specify more granular traffic rules.
+
 ### Follow on screen instructions
 
 Then follow the on screen instructions or try [this detailed getting started guide](http://fabric8.io/guide/getStartedVagrant.html)
