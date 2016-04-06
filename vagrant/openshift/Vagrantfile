@@ -34,7 +34,7 @@ unzip helm.zip
 mv helm /bin/helm
 
 # TODO for now lets use the latest build until we've a release...
-curl --retry 999 --retry-max-time 0 -sSL https://github.com/fabric8io/gofabric8/releases/download/v0.4.6/gofabric8-0.4.6-linux-amd64.tar.gz | tar xzv -C /tmp/gofabric8
+curl --retry 999 --retry-max-time 0 -sSL https://github.com/fabric8io/gofabric8/releases/download/v0.4.7/gofabric8-0.4.7-linux-amd64.tar.gz | tar xzv -C /tmp/gofabric8
 #curl --retry 999 --retry-max-time 0  -sSL https://fabric8-ci.fusesource.com/job/gofabric8/lastSuccessfulBuild/artifact/src/github.com/fabric8io/gofabric8/build/gofabric8 > /tmp/gofabric8/gofabric8
 chmod +x /tmp/gofabric8/gofabric8
 mv /tmp/gofabric8/* /usr/bin/
@@ -48,8 +48,8 @@ mkdir /tmp/openshift
 echo "Downloading OpenShift binaries..."
 
 # NOTE make sure the OpenShift version matches the same one in the download URL!
-OPENSHIFT_VERSION="1.1.4"
-curl --retry 999 --retry-max-time 0 -sSL https://github.com/openshift/origin/releases/download/v1.1.4/openshift-origin-server-v1.1.4-3941102-linux-64bit.tar.gz | tar xzv -C /tmp/openshift
+OPENSHIFT_VERSION="1.1.6"
+curl --retry 999 --retry-max-time 0 -sSL https://github.com/openshift/origin/releases/download/v1.1.6/openshift-origin-server-v1.1.6-ef1caba-linux-64bit.tar.gz | tar xzv -C /tmp/openshift
 mv /tmp/openshift/openshift-origin-*/* /usr/bin/
 
 # lets setup helm with our repo
@@ -235,7 +235,7 @@ Help on using the console:
 EOT
 
 # now lets create the registry
-oc adm registry --create --credentials=/var/lib/openshift/openshift.local.config/master/openshift-registry.kubeconfig
+oc adm registry --create --credentials=/var/lib/openshift/openshift.local.config/master/openshift-registry.kubeconfig --service-account=registry
 
 SCRIPT
 
