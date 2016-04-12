@@ -43,7 +43,7 @@ fi
 
 mkdir /tmp/openshift
 echo "Downloading OpenShift binaries..."
-curl --retry 999 --retry-max-time 0 -sSL https://github.com/jimmidyson/origin/releases/download/v1.1.4-jenkins-build-config/openshift-origin-server-build-config-fork-linux-64bit.tar.gz | tar xzv -C /tmp/openshift
+curl --retry 999 --retry-max-time 0 -sSL https://github.com/jimmidyson/origin/releases/download/v1.1.6-jenkins-build-config/openshift-origin-server-build-config-fork-linux-64bit.tar.gz | tar xzv -C /tmp/openshift
 chmod +x /tmp/openshift/openshift-origin-server-*/{openshift,oc}
 mv /tmp/openshift/openshift-origin-server-*/{openshift,oc} /usr/bin
 
@@ -160,7 +160,7 @@ until oc get pods -l project=console,provider=fabric8  | grep -m 1 "Running"; do
 echo "Fabric8 console is now running. Waiting for the Openshift Router to start..."
 
 echo "Lets pull the router docker images first"
-docker pull openshift/origin-haproxy-router:v1.1.4
+docker pull openshift/origin-haproxy-router:v1.1.6
 docker pull prom/haproxy-exporter:latest
 
 echo "Now lets wait for the router to start"
