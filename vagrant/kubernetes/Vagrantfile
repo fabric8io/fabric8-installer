@@ -65,11 +65,14 @@ cd /vagrant/kubernetes/cluster/centos/master/scripts
 ./controller-manager.sh 172.28.128.80
 ./scheduler.sh 172.28.128.80
 
-
-echo `systemctl list-units -t service`
+cd /vagrant/kubernetes/cluster/centos/node/scripts
+./kubelet.sh 172.28.128.80 172.28.128.80
+./proxy.sh 172.28.128.80 172.28.128.80
 
 echo "waiting 5s for service start"
 sleep 5
+
+echo `systemctl list-units -t service`
 
 echo "Testing api server with curl http://172.28.128.80:8080/version"
 echo `curl http://172.28.128.80:8080/version`
