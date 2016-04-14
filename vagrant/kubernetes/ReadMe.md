@@ -3,7 +3,7 @@
 **NOTE** right now to install this vagrant file you need to download a tarball of Kubernetes and unpack it to a local `kubernetes` folder in this directory!
 
 ```
-curl https://github.com/kubernetes/kubernetes/releases/download/v1.3.0-alpha.2/kubernetes.tar.gz | tar xzv
+curl -L https://github.com/kubernetes/kubernetes/releases/download/v1.3.0-alpha.2/kubernetes.tar.gz | tar xzv
 ```
 
 This is the fastest way to get going with Fabric8 and Kubernetes on your laptop.
