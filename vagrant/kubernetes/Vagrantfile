@@ -59,13 +59,23 @@ echo "Lets create a cert"
 
 echo "OK now lets run stuff!"
 
-cd /vagrant/kubernetes/cluster/centos/master/scripts
+mkdir -p ~/kube-scripts
+cd ~/kube-scripts
+
+cp -ru /vagrant/kubernetes/cluster/centos/master/scripts/* .
+cp -ru /vagrant/kubernetes/cluster/centos/node/scripts/* .
+
+// lets tweak the scripts a little...
+// lets enable priv containers
+sed -i 's|^KUBE_ALLOW_PRIV.*|KUBE_ALLOW_PRIV="--allow-privileged=true"|' ./apiserver.sh
+sed -i 's|^KUBE_ALLOW_PRIV.*|KUBE_ALLOW_PRIV="--allow-privileged=true"|' ./kubelet.sh
+
+
 ./etcd.sh
 ./apiserver.sh 172.28.128.80 http://localhost:4001
 ./controller-manager.sh 172.28.128.80
 ./scheduler.sh 172.28.128.80
 
-cd /vagrant/kubernetes/cluster/centos/node/scripts
 ./kubelet.sh 172.28.128.80 172.28.128.80
 ./proxy.sh 172.28.128.80 172.28.128.80
 
@@ -134,6 +144,11 @@ gofabric8 -s http://172.28.128.80:8080 secrets -y
 gofabric8 -s http://172.28.128.80:8080 volume -y --host-path="/vagrant/fabric8-data"
 
 
+# TODO as a workaround for gofabric8 secrets not yet working on k8s lets create some
+kubectl create secret generic jenkins-release-gpg
+kubectl create secret generic jenkins-git-ssh
+kubectl create secret generic jenkins-master-ssh
+kubectl create secret generic jenkins-docker-cfg
 
 echo ""
 echo "Waiting for the fabric8 console to start..."
