@@ -138,7 +138,7 @@ gofabric8 -s http://172.28.128.80:8080 volume -y --host-path="/vagrant/fabric8-d
 echo ""
 echo "Waiting for the fabric8 console to start..."
 
-until kubectl get pods -l component=console,provider=fabric8  | grep -m 1 "Running"; do sleep 1 ; done
+until kubectl get pods -l project=console,provider=fabric8  | grep -m 1 "Running"; do sleep 1 ; done
 
 
 cat <<EOT
