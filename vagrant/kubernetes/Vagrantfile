@@ -9,43 +9,70 @@ Vagrant.require_version ">= 1.7.2"
 
 $provisionScript = <<SCRIPT
 
-echo "Installing etcd locally"
+echo "Creating a cert"
+mkdir -p /srv/kubernetes
 
+cd /srv/kubernetes
+
+export MASTER_NAME=server
+export DNS_DOMAIN=vagrant.k8s
+export primary_cn=rht
+export service_ip=172.28.128.80
+export sans="${sans}IP:${service_ip},DNS:kubernetes,DNS:kubernetes.default,DNS:kubernetes.default.svc,DNS:kubernetes.default.svc.${DNS_DOMAIN},DNS:${MASTER_NAME}"
+
+
+mkdir tmp
+cd tmp
+curl -L -O --connect-timeout 20 --retry 6 --retry-delay 2 https://storage.googleapis.com/kubernetes-release/easy-rsa/easy-rsa.tar.gz
+tar xzf easy-rsa.tar.gz
+cd easy-rsa-master/easyrsa3
+./easyrsa init-pki
+./easyrsa --batch "--req-cn=${primary_cn}@$(date +%s)" build-ca nopass
+./easyrsa --subject-alt-name="${sans}" build-server-full "${MASTER_NAME}" nopass
+./easyrsa build-client-full kubelet nopass
+./easyrsa build-client-full kubecfg nopass
+
+cp ./pki/ca.crt /srv/kubernetes
+cp ./pki/private/* /srv/kubernetes
+cp ./pki/issued/server.crt /srv/kubernetes/server.cert
+cp ./pki/issued/kubelet.crt /srv/kubernetes/kubelet.cert
+cp ./pki/issued/kubecfg.crt /srv/kubernetes/kubecfg.cert
+
+
+echo "installing git and etcd"
 yum -y install etcd git
 
+mkdir -p ~/kubedistro
+cd ~/kubedistro
 
-echo "systemctl start etcd..."
-echo `systemctl start etcd`
+# TODO check if the folder exists, if not download and unpack the distro...
+tar xf /vagrant/kubernetes/server/kubernetes-server-linux-amd64.tar.gz
 
-curl -sSL https://get.kismatic.com/kubernetes/master.sh | sudo sh
+mkdir -p /opt/kubernetes/bin/
+mkdir -p /opt/kubernetes/cfg/
 
-yum clean expire-cache
+cp -u /bin/etcd /opt/kubernetes/bin
+cp -ru kubernetes/server/bin/* /opt/kubernetes/bin
+cp -ru kubernetes/server/bin/* /usr/bin
 
-# enable cors on api server
-echo 'KUBE_API_ARGS="--runtime_config=api/v1beta3 --cluster_name=kubernetes --cors-allowed-origins=.*"' >> /etc/kubernetes/master/apiserver.conf
+echo "Lets create a cert"
+
+echo "OK now lets run stuff!"
+
+cd /vagrant/kubernetes/cluster/centos/master/scripts
+./etcd.sh
+./apiserver.sh 172.28.128.80 http://localhost:4001
+./controller-manager.sh 172.28.128.80
+./scheduler.sh 172.28.128.80
 
 
-echo "Running Services"
-echo "systemctl start kube-apiserver..."
-echo `systemctl start kube-apiserver`
-
-echo "systemctl start kube-scheduler..."
-echo `systemctl start kube-scheduler`
-
-echo "systemctl start kube-controller-manager..."
-echo `systemctl start kube-controller-manager`
-
-echo "systemctl start kubelet..."
-echo `systemctl start kubelet`
-
-echo "service status with"
 echo `systemctl list-units -t service`
 
 echo "waiting 5s for service start"
 sleep 5
 
-echo "Testing api server with curl http://localhost:8080/version"
-echo `curl http://localhost:8080/version`
+echo "Testing api server with curl http://172.28.128.80:8080/version"
+echo `curl http://172.28.128.80:8080/version`
 
 cat <<EOT
 
@@ -71,17 +98,44 @@ Now downloading gofabric8...
 EOT
 
 
-curl --retry 999 --retry-max-time 0  -sSL  https://fabric8-ci.fusesource.com/job/gofabric8/lastSuccessfulBuild/artifact/src/github.com/fabric8io/gofabric8/build/gofabric8 > /tmp/gofabric8
-chmod +x /tmp/gofabric8
-sudo mv /tmp/gofabric8 /usr/bin
+mkdir -p /tmp/gofabric8-download
+cd /tmp/gofabric8-download
+curl --retry 999 --retry-max-time 0 -sSL https://github.com/fabric8io/gofabric8/releases/download/v0.4.7/gofabric8-0.4.7-linux-amd64.tar.gz | tar xzv 
+chmod +x gofabric8
+sudo mv gofabric8 /usr/bin
 
 echo "Using gofabric8 to deploy fabric8 on kubernetes"
-sudo gofabric8 deploy
+
+mkdir -p ~/.kube
+cat << EOT > ~/.kube/config
+apiVersion: v1
+clusters:
+- cluster:
+    server: http://172.28.128.80:8080
+  name: local
+contexts:
+- context:
+    cluster: "local"
+    user: ""
+  name: local
+current-context: local
+kind: Config
+preferences: {}
+users: []
+EOT
+
+kubectl get pods
+
+gofabric8 -s http://172.28.128.80:8080 deploy -y
+gofabric8 -s http://172.28.128.80:8080 secrets -y
+gofabric8 -s http://172.28.128.80:8080 volume -y --host-path="/vagrant/fabric8-data"
+
+
 
 echo ""
 echo "Waiting for the fabric8 console to start..."
 
-until kubectl --server=http://172.28.128.80:8080 get pods -l component=console,provider=fabric8  | grep -m 1 "Running"; do sleep 1 ; done
+until kubectl get pods -l component=console,provider=fabric8  | grep -m 1 "Running"; do sleep 1 ; done
 
 
 cat <<EOT
@@ -141,7 +195,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   end
 
   config.vm.box = "jimmidyson/centos-7.1"
-  config.vm.box_version = "= 1.1.2"
+  config.vm.box_version = "= 1.3.1"
 
   config.vm.network "private_network", ip: "172.28.128.80"
 
