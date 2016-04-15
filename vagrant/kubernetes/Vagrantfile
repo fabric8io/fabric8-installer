@@ -14,11 +14,11 @@ mkdir -p /srv/kubernetes
 
 cd /srv/kubernetes
 
-export DNS_REPLICAS=1
+export DNS_REPLICAS="1"
 export DNS_DOMAIN="cluster.local"
 export DNS_SERVER_IP="10.10.10.10"
-export ENABLE_CLUSTER_DNS=true
-#export DNS_DOMAIN=vagrant.k8s
+export ENABLE_CLUSTER_DNS="true"
+#export DNS_DOMAIN="vagrant.k8s"
 
 export MASTER_NAME=server
 export primary_cn=rht
@@ -70,23 +70,21 @@ cd ~/kube-scripts
 
 cp -ru /vagrant/kubernetes/cluster/centos/master/scripts/* .
 cp -ru /vagrant/kubernetes/cluster/centos/node/scripts/* .
+cp -ru ${KUBE_ROOT}/cluster/addons/dns/skydns-rc.yaml.in skydns-rc.yaml
+cp -ru ${KUBE_ROOT}/cluster/addons/dns/skydns-svc.yaml.in skydns-svc.yaml
 
 # lets tweak the scripts a little...
 # lets enable priv containers
 sed -i 's|^KUBE_ALLOW_PRIV.*|KUBE_ALLOW_PRIV="--allow-privileged=true"|' ./apiserver.sh
 sed -i 's|^KUBE_ALLOW_PRIV.*|KUBE_ALLOW_PRIV="--allow-privileged=true"|' ./kubelet.sh
 
-
 # lets setup DNS
-sed -e "s/{{ pillar\['dns_replicas'\] }}/${DNS_REPLICAS}/g;s/{{ pillar\['dns_domain'\] }}/${DNS_DOMAIN}/g;" "${KUBE_ROOT}/cluster/addons/dns/skydns-rc.yaml.in" > skydns-rc.yaml
-sed -e "s/{{ pillar\['dns_server'\] }}/${DNS_SERVER_IP}/g" "${KUBE_ROOT}/cluster/addons/dns/skydns-svc.yaml.in" > skydns-svc.yaml
+sed -i "s|{{ pillar.*dns_replicas.* }}|${DNS_REPLICAS}|" ./skydns-rc.yaml
+sed -i "s|{{ pillar.*dns_domain.* }}|${DNS_DOMAIN}|" ./skydns-rc.yaml
+sed -i "s|{{ pillar.*dns_server.* }}|${DNS_SERVER_IP}|" ./skydns-svc.yaml
 
-KUBEDNS=`eval "${KUBECTL} get services --namespace=kube-system | grep kube-dns | cat"`
-
-
-kubectl --namespace=kube-system create -f skydns-rc.yaml
-kubectl --namespace=kube-system create -f skydns-svc.yaml
-
+echo "Should have updated the replicas in the skydns-rc.yaml now...."
+grep replicas ./skydns-rc.yaml
 
 
 ./etcd.sh
@@ -104,6 +102,32 @@ echo `systemctl list-units -t service`
 
 echo "Testing api server with curl http://172.28.128.80:8080/version"
 echo `curl http://172.28.128.80:8080/version`
+
+mkdir -p ~/.kube
+cat << EOT > ~/.kube/config
+apiVersion: v1
+clusters:
+- cluster:
+    server: http://172.28.128.80:8080
+  name: local
+contexts:
+- context:
+    cluster: "local"
+    user: ""
+  name: local
+current-context: local
+kind: Config
+preferences: {}
+users: []
+EOT
+
+
+echo "Creating SkyDNS"
+
+kubectl create namespace kube-system
+kubectl --namespace=kube-system create -f skydns-rc.yaml
+kubectl --namespace=kube-system create -f skydns-svc.yaml
+
 
 cat <<EOT
 
@@ -137,24 +161,6 @@ sudo mv gofabric8 /usr/bin
 
 echo "Using gofabric8 to deploy fabric8 on kubernetes"
 
-mkdir -p ~/.kube
-cat << EOT > ~/.kube/config
-apiVersion: v1
-clusters:
-- cluster:
-    server: http://172.28.128.80:8080
-  name: local
-contexts:
-- context:
-    cluster: "local"
-    user: ""
-  name: local
-current-context: local
-kind: Config
-preferences: {}
-users: []
-EOT
-
 kubectl get pods
 
 gofabric8 -s http://172.28.128.80:8080 deploy -y
@@ -163,6 +169,7 @@ gofabric8 -s http://172.28.128.80:8080 volume -y --host-path="/vagrant/fabric8-d
 
 
 # TODO as a workaround for gofabric8 secrets not yet working on k8s lets create some
+echo "Manually creating some secrets for Jenkins for now until gofabric8 secrets works properly on kubernetes!"
 kubectl create secret generic jenkins-release-gpg
 kubectl create secret generic jenkins-git-ssh
 kubectl create secret generic jenkins-master-ssh
