@@ -7,11 +7,14 @@ VAGRANTFILE_API_VERSION = "2"
 
 Vagrant.require_version ">= 1.7.2"
 
-KUBERNETES_VERSION = ENV["KUBERNETES_VERSION"] || "1.2.2"
+KUBERNETES_VERSION = ENV["KUBERNETES_VERSION"] || "1.3.0-alpha.2"
 
 $provisionScript = <<SCRIPT
 
 export K8S_VERSION="v#{KUBERNETES_VERSION}"
+export KUBECTL_VERSION="v#{KUBERNETES_VERSION}"
+export KUBECTL_VERSION="v1.2.2"
+
 
 docker run \
     --volume=/:/rootfs:ro \
@@ -35,7 +38,7 @@ docker run \
         --cluster-domain=cluster.local \
         --allow-privileged=true --v=2
 
-curl -Lo /usr/bin/kubectl http://storage.googleapis.com/kubernetes-release/release/${K8S_VERSION}/bin/linux/amd64/kubectl
+curl -Lo /usr/bin/kubectl http://storage.googleapis.com/kubernetes-release/release/${KUBECTL_VERSION}/bin/linux/amd64/kubectl
 chmod 755 /usr/bin/kubectl
 
 kubectl config set-cluster default --server=http://localhost:8080
