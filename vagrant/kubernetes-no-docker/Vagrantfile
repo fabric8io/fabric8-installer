@@ -7,65 +7,130 @@ VAGRANTFILE_API_VERSION = "2"
 
 Vagrant.require_version ">= 1.7.2"
 
-KUBERNETES_VERSION = ENV["KUBERNETES_VERSION"] || "1.2.2"
-
 $provisionScript = <<SCRIPT
 
-export K8S_VERSION="v#{KUBERNETES_VERSION}"
+echo "Creating a cert"
+mkdir -p /srv/kubernetes
 
-docker run \
-    --volume=/:/rootfs:ro \
-    --volume=/sys:/sys:ro \
-    --volume=/var/lib/docker/:/var/lib/docker:rw \
-    --volume=/var/lib/kubelet/:/var/lib/kubelet:rw \
-    --volume=/var/run:/var/run:rw \
-    --net=host \
-    --pid=host \
-    --privileged=true \
-    --name=kubelet \
-    -d \
-    gcr.io/google_containers/hyperkube-amd64:${K8S_VERSION} \
-    /hyperkube kubelet \
-        --containerized \
-        --hostname-override="172.28.128.80" \
-        --address="0.0.0.0" \
-        --api-servers=http://172.28.128.80:8080 \
-        --config=/etc/kubernetes/manifests \
-        --cluster-dns=10.0.0.10 \
-        --cluster-domain=cluster.local \
-        --allow-privileged=true --v=2
+cd /srv/kubernetes
 
-curl -Lo /usr/bin/kubectl http://storage.googleapis.com/kubernetes-release/release/${K8S_VERSION}/bin/linux/amd64/kubectl
-chmod 755 /usr/bin/kubectl
+export DNS_REPLICAS="1"
+export DNS_DOMAIN="cluster.local"
+export DNS_SERVER_IP="10.10.10.10"
+export ENABLE_CLUSTER_DNS="true"
+#export DNS_DOMAIN="vagrant.k8s"
 
-kubectl config set-cluster default --server=http://localhost:8080
-kubectl config set-context default --cluster=cluster
-kubectl config use-context default
+export MASTER_NAME=server
+export primary_cn=rht
+export service_ip=172.28.128.80
+export sans="${sans}IP:${service_ip},DNS:kubernetes,DNS:kubernetes.default,DNS:kubernetes.default.svc,DNS:kubernetes.default.svc.${DNS_DOMAIN},DNS:${MASTER_NAME}"
+export KUBE_ROOT=/vagrant/kubernetes
 
-until kubectl get pods 2>/dev/null >/dev/null;
-do
-  sleep 1
-done
 
-docker exec kubelet sed -i 's/--insecure-bind-address=127.0.0.1/--insecure-bind-address=0.0.0.0/' /etc/kubernetes/manifests/master.json
+mkdir tmp
+cd tmp
+curl -L -O --connect-timeout 20 --retry 6 --retry-delay 2 https://storage.googleapis.com/kubernetes-release/easy-rsa/easy-rsa.tar.gz
+tar xzf easy-rsa.tar.gz
+cd easy-rsa-master/easyrsa3
+./easyrsa init-pki
+./easyrsa --batch "--req-cn=${primary_cn}@$(date +%s)" build-ca nopass
+./easyrsa --subject-alt-name="${sans}" build-server-full "${MASTER_NAME}" nopass
+./easyrsa build-client-full kubelet nopass
+./easyrsa build-client-full kubecfg nopass
 
-until kubectl get pods --server=http://172.28.128.80:8080 2>/dev/null >/dev/null;
-do
-  sleep 1
-done
+cp ./pki/ca.crt /srv/kubernetes
+cp ./pki/private/* /srv/kubernetes
+cp ./pki/issued/server.crt /srv/kubernetes/server.cert
+cp ./pki/issued/kubelet.crt /srv/kubernetes/kubelet.cert
+cp ./pki/issued/kubecfg.crt /srv/kubernetes/kubecfg.cert
+
+
+echo "installing git and etcd"
+yum -y install etcd git
+
+mkdir -p ~/kubedistro
+cd ~/kubedistro
+
+# TODO check if the folder exists, if not download and unpack the distro...
+tar xf /vagrant/kubernetes/server/kubernetes-server-linux-amd64.tar.gz
+
+mkdir -p /opt/kubernetes/bin/
+mkdir -p /opt/kubernetes/cfg/
+
+cp -u /bin/etcd /opt/kubernetes/bin
+cp -ru kubernetes/server/bin/* /opt/kubernetes/bin
+cp -ru kubernetes/server/bin/* /usr/bin
+
+echo "Lets create a cert"
+
+echo "OK now lets run stuff!"
+
+mkdir -p ~/kube-scripts
+cd ~/kube-scripts
+
+cp -ru /vagrant/kubernetes/cluster/centos/master/scripts/* .
+cp -ru /vagrant/kubernetes/cluster/centos/node/scripts/* .
+cp -ru ${KUBE_ROOT}/cluster/addons/dns/skydns-rc.yaml.in skydns-rc.yaml
+cp -ru ${KUBE_ROOT}/cluster/addons/dns/skydns-svc.yaml.in skydns-svc.yaml
+
+# lets tweak the scripts a little...
+# lets enable priv containers
+sed -i 's|^KUBE_ALLOW_PRIV.*|KUBE_ALLOW_PRIV="--allow-privileged=true"|' ./apiserver.sh
+sed -i 's|^KUBE_ALLOW_PRIV.*|KUBE_ALLOW_PRIV="--allow-privileged=true"|' ./kubelet.sh
+
+# lets setup DNS
+sed -i "s|{{ pillar.*dns_replicas.* }}|${DNS_REPLICAS}|" ./skydns-rc.yaml
+sed -i "s|{{ pillar.*dns_domain.* }}|${DNS_DOMAIN}|" ./skydns-rc.yaml
+sed -i "s|{{ pillar.*dns_server.* }}|${DNS_SERVER_IP}|" ./skydns-svc.yaml
+
+echo "Should have updated the replicas in the skydns-rc.yaml now...."
+grep replicas ./skydns-rc.yaml
+
+
+./etcd.sh
+./apiserver.sh 172.28.128.80 http://localhost:4001
+./controller-manager.sh 172.28.128.80
+./scheduler.sh 172.28.128.80
+
+./kubelet.sh 172.28.128.80 172.28.128.80
+./proxy.sh 172.28.128.80 172.28.128.80
+
+echo "waiting 5s for service start"
+sleep 5
+
+echo `systemctl list-units -t service`
+
+echo "Testing api server with curl http://172.28.128.80:8080/version"
+echo `curl http://172.28.128.80:8080/version`
+
+mkdir -p ~/.kube
+cat << EOT > ~/.kube/config
+apiVersion: v1
+clusters:
+- cluster:
+    server: http://172.28.128.80:8080
+  name: local
+contexts:
+- context:
+    cluster: "local"
+    user: ""
+  name: local
+current-context: local
+kind: Config
+preferences: {}
+users: []
+EOT
+
+
+echo "Creating SkyDNS"
 
 kubectl create namespace kube-system
+kubectl --namespace=kube-system create -f skydns-rc.yaml
+kubectl --namespace=kube-system create -f skydns-svc.yaml
 
-curl -LO http://kubernetes.io/docs/getting-started-guides/docker-multinode/skydns.yaml.in
-
-export DNS_REPLICAS=1
-export DNS_DOMAIN=cluster.local
-export DNS_SERVER_IP=10.0.0.10
-
-sed -e "s/{{ pillar\\['dns_replicas'\\] }}/${DNS_REPLICAS}/g;s/{{ pillar\\['dns_domain'\\] }}/${DNS_DOMAIN}/g;s/{{ pillar\\['dns_server'\\] }}/${DNS_SERVER_IP}/g" skydns.yaml.in > ./skydns.yaml
-kubectl create -f ./skydns.yaml
 
 cat <<EOT
+
 
 Testing kubernetes
 ==================
@@ -185,11 +250,9 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     v.customize ["modifyvm", :id, "--natdnshostresolver1", "on"]
   end
 
-  config.vm.provider :libvirt do |v, override|
+  config.vm.provider :libvirt do |v|
     v.cpus = 2
     v.memory = 4096
-
-    override.vm.allowed_synced_folder_types = [:nfs, :rsync]
   end
 
   config.vm.provision "shell", inline: $provisionScript, keep_color: true
