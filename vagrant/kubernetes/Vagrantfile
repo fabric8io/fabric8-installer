@@ -102,14 +102,6 @@ gofabric8 -s http://172.28.128.80:8080 deploy -y
 gofabric8 -s http://172.28.128.80:8080 secrets -y
 gofabric8 -s http://172.28.128.80:8080 volume -y --host-path="/vagrant/fabric8-data"
 
-
-# TODO as a workaround for gofabric8 secrets not yet working on k8s lets create some
-echo "Manually creating some secrets for Jenkins for now until gofabric8 secrets works properly on kubernetes!"
-kubectl create secret generic jenkins-release-gpg
-kubectl create secret generic jenkins-git-ssh
-kubectl create secret generic jenkins-master-ssh
-kubectl create secret generic jenkins-docker-cfg
-
 echo ""
 echo "Waiting for the fabric8 console to start..."
 
