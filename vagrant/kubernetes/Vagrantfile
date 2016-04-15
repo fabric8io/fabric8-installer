@@ -14,11 +14,17 @@ mkdir -p /srv/kubernetes
 
 cd /srv/kubernetes
 
+export DNS_REPLICAS=1
+export DNS_DOMAIN="cluster.local"
+export DNS_SERVER_IP="10.10.10.10"
+export ENABLE_CLUSTER_DNS=true
+#export DNS_DOMAIN=vagrant.k8s
+
 export MASTER_NAME=server
-export DNS_DOMAIN=vagrant.k8s
 export primary_cn=rht
 export service_ip=172.28.128.80
 export sans="${sans}IP:${service_ip},DNS:kubernetes,DNS:kubernetes.default,DNS:kubernetes.default.svc,DNS:kubernetes.default.svc.${DNS_DOMAIN},DNS:${MASTER_NAME}"
+export KUBE_ROOT=/vagrant/kubernetes
 
 
 mkdir tmp
@@ -65,10 +71,22 @@ cd ~/kube-scripts
 cp -ru /vagrant/kubernetes/cluster/centos/master/scripts/* .
 cp -ru /vagrant/kubernetes/cluster/centos/node/scripts/* .
 
-// lets tweak the scripts a little...
-// lets enable priv containers
+# lets tweak the scripts a little...
+# lets enable priv containers
 sed -i 's|^KUBE_ALLOW_PRIV.*|KUBE_ALLOW_PRIV="--allow-privileged=true"|' ./apiserver.sh
 sed -i 's|^KUBE_ALLOW_PRIV.*|KUBE_ALLOW_PRIV="--allow-privileged=true"|' ./kubelet.sh
+
+
+# lets setup DNS
+sed -e "s/{{ pillar\['dns_replicas'\] }}/${DNS_REPLICAS}/g;s/{{ pillar\['dns_domain'\] }}/${DNS_DOMAIN}/g;" "${KUBE_ROOT}/cluster/addons/dns/skydns-rc.yaml.in" > skydns-rc.yaml
+sed -e "s/{{ pillar\['dns_server'\] }}/${DNS_SERVER_IP}/g" "${KUBE_ROOT}/cluster/addons/dns/skydns-svc.yaml.in" > skydns-svc.yaml
+
+KUBEDNS=`eval "${KUBECTL} get services --namespace=kube-system | grep kube-dns | cat"`
+
+
+kubectl --namespace=kube-system create -f skydns-rc.yaml
+kubectl --namespace=kube-system create -f skydns-svc.yaml
+
 
 
 ./etcd.sh
