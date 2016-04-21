@@ -9,11 +9,25 @@ Vagrant.require_version ">= 1.7.4"
 
 KUBERNETES_VERSION = ENV["KUBERNETES_VERSION"] || "1.3.0-alpha.2"
 
+# for running the CD Pipeline we recommend at least 8000 for memory!
+$vmMemory = Integer(ENV['FABRIC8_VM_MEMORY'] || 4096)
+
 $provisionScript = <<SCRIPT
 
 export K8S_VERSION="v#{KUBERNETES_VERSION}"
 export KUBECTL_VERSION="v#{KUBERNETES_VERSION}"
 export KUBECTL_VERSION="v1.2.2"
+
+# Check memory
+VM_MEMORY="#{$vmMemory}"
+echo "=========================================================================="
+echo "Using VM Memory of ${VM_MEMORY} MB"
+if [ ${VM_MEMORY} -lt 8192 ]; then
+  echo "NOTE: We recommend at least 8192 MB for running the 'cd-pipeline'."
+  echo "      You can specify this with an environment variable FABRIC8_VM_MEMORY"
+  echo "      E.g. when creating the VM with : 'FABRIC8_VM_MEMORY=8192 vagrant up'"
+fi
+echo "=========================================================================="
 
 curl -Lo /usr/bin/kubectl http://storage.googleapis.com/kubernetes-release/release/${KUBECTL_VERSION}/bin/linux/amd64/kubectl
 chmod 755 /usr/bin/kubectl
@@ -140,14 +154,14 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   config.vm.hostname = "vagrant." + $tld
 
   config.vm.provider "virtualbox" do |v|
-    v.memory = 4096
+    v.memory = $vmMemory
     v.cpus = 2
     v.customize ["modifyvm", :id, "--natdnshostresolver1", "on"]
   end
 
   config.vm.provider :libvirt do |v, override|
     v.cpus = 2
-    v.memory = 4096
+    v.memory = $vmMemory
 
     override.vm.allowed_synced_folder_types = [:nfs, :rsync]
   end
