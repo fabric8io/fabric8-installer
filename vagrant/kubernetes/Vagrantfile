@@ -15,80 +15,12 @@ export K8S_VERSION="v#{KUBERNETES_VERSION}"
 export KUBECTL_VERSION="v#{KUBERNETES_VERSION}"
 export KUBECTL_VERSION="v1.2.2"
 
-cat <<EOT > /usr/bin/recreate-kubernetes
-#!/bin/sh
-echo "Recreating kubernetes..."
-
-echo "Stopping all docker containers"
-docker stop \$(docker ps -a -q)
-
-echo "Removing all docker containers"
-docker rm -f \$(docker ps -a -q)
-
-echo "Starting Kuberentes"
-/usr/bin/start-kubernetes
-EOT
-
-chmod 775 /usr/bin/recreate-kubernetes
-
-cat <<EOT > /usr/bin/start-kubernetes
-#!/bin/sh
-echo "Running Kubernetes version: ${K8S_VERSION}"
-docker run \
-    --volume=/:/rootfs:ro \
-    --volume=/sys:/sys:ro \
-    --volume=/var/lib/docker/:/var/lib/docker:rw \
-    --volume=/var/lib/kubelet/:/var/lib/kubelet:rw \
-    --volume=/var/run:/var/run:rw \
-    --net=host \
-    --pid=host \
-    --privileged=true \
-    --name=kubelet \
-    -d \
-    gcr.io/google_containers/hyperkube-amd64:${K8S_VERSION} \
-    /hyperkube kubelet \
-        --containerized \
-        --hostname-override="172.28.128.80" \
-        --address="0.0.0.0" \
-        --api-servers=http://172.28.128.80:8080 \
-        --config=/etc/kubernetes/manifests \
-        --cluster-dns=10.0.0.10 \
-        --cluster-domain=cluster.local \
-        --allow-privileged=true --v=2
-
-kubectl config set-cluster default --server=http://localhost:8080
-kubectl config set-context default --cluster=cluster
-kubectl config use-context default
-
-until kubectl get pods 2>/dev/null >/dev/null;
-do
-  sleep 1
-done
-
-docker exec kubelet sed -i 's/--insecure-bind-address=127.0.0.1/--insecure-bind-address=0.0.0.0/' /etc/kubernetes/manifests/master.json
-
-until kubectl get pods --server=http://172.28.128.80:8080 2>/dev/null >/dev/null;
-do
-  sleep 1
-done
-
-kubectl create namespace kube-system
-
-curl -LO http://kubernetes.io/docs/getting-started-guides/docker-multinode/skydns.yaml.in
-
-export DNS_REPLICAS=1
-export DNS_DOMAIN=cluster.local
-export DNS_SERVER_IP=10.0.0.10
-
-sed -e "s/{{ pillar\\['dns_replicas'\\] }}/${DNS_REPLICAS}/g;s/{{ pillar\\['dns_domain'\\] }}/${DNS_DOMAIN}/g;s/{{ pillar\\['dns_server'\\] }}/${DNS_SERVER_IP}/g" skydns.yaml.in > ./skydns.yaml
-kubectl apply -f ./skydns.yaml
-
-EOT
-
-chmod 775 /usr/bin/start-kubernetes
-
 curl -Lo /usr/bin/kubectl http://storage.googleapis.com/kubernetes-release/release/${KUBECTL_VERSION}/bin/linux/amd64/kubectl
 chmod 755 /usr/bin/kubectl
+
+cp /vagrant/bin/* /usr/bin
+chmod 775 /usr/bin/recreate-kubernetes
+chmod 775 /usr/bin/start-kubernetes
 
 /usr/bin/start-kubernetes
 
