@@ -15,7 +15,25 @@ export K8S_VERSION="v#{KUBERNETES_VERSION}"
 export KUBECTL_VERSION="v#{KUBERNETES_VERSION}"
 export KUBECTL_VERSION="v1.2.2"
 
+cat <<EOT > /usr/bin/recreate-kubernetes
+#!/bin/sh
+echo "Recreating kubernetes..."
 
+echo "Stopping all docker containers"
+docker stop \$(docker ps -a -q)
+
+echo "Removing all docker containers"
+docker rm -f \$(docker ps -a -q)
+
+echo "Starting Kuberentes"
+/usr/bin/start-kubernetes
+EOT
+
+chmod 775 /usr/bin/recreate-kubernetes
+
+cat <<EOT > /usr/bin/start-kubernetes
+#!/bin/sh
+echo "Running Kubernetes version: ${K8S_VERSION}"
 docker run \
     --volume=/:/rootfs:ro \
     --volume=/sys:/sys:ro \
@@ -37,9 +55,6 @@ docker run \
         --cluster-dns=10.0.0.10 \
         --cluster-domain=cluster.local \
         --allow-privileged=true --v=2
-
-curl -Lo /usr/bin/kubectl http://storage.googleapis.com/kubernetes-release/release/${KUBECTL_VERSION}/bin/linux/amd64/kubectl
-chmod 755 /usr/bin/kubectl
 
 kubectl config set-cluster default --server=http://localhost:8080
 kubectl config set-context default --cluster=cluster
@@ -66,7 +81,16 @@ export DNS_DOMAIN=cluster.local
 export DNS_SERVER_IP=10.0.0.10
 
 sed -e "s/{{ pillar\\['dns_replicas'\\] }}/${DNS_REPLICAS}/g;s/{{ pillar\\['dns_domain'\\] }}/${DNS_DOMAIN}/g;s/{{ pillar\\['dns_server'\\] }}/${DNS_SERVER_IP}/g" skydns.yaml.in > ./skydns.yaml
-kubectl create -f ./skydns.yaml
+kubectl apply -f ./skydns.yaml
+
+EOT
+
+chmod 775 /usr/bin/start-kubernetes
+
+curl -Lo /usr/bin/kubectl http://storage.googleapis.com/kubernetes-release/release/${KUBECTL_VERSION}/bin/linux/amd64/kubectl
+chmod 755 /usr/bin/kubectl
+
+/usr/bin/start-kubernetes
 
 cat <<EOT
 
@@ -93,7 +117,7 @@ EOT
 
 mkdir -p /tmp/gofabric8-download
 cd /tmp/gofabric8-download
-curl --retry 999 --retry-max-time 0 -sSL https://github.com/fabric8io/gofabric8/releases/download/v0.4.9/gofabric8-0.4.9-linux-amd64.tar.gz | tar xzv
+curl --retry 999 --retry-max-time 0 -sSL https://github.com/fabric8io/gofabric8/releases/download/v0.4.10/gofabric8-0.4.10-linux-amd64.tar.gz | tar xzv
 chmod +x gofabric8
 sudo mv gofabric8 /usr/bin
 
