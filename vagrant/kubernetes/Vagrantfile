@@ -30,6 +30,11 @@ fi
 echo "=========================================================================="
 
 curl -Lo /usr/bin/kubectl http://storage.googleapis.com/kubernetes-release/release/${KUBECTL_VERSION}/bin/linux/amd64/kubectl
+if [ $? -ne 0 ]; then
+    echo "Cannot download Kubernetes client from the internet. Check your connectivity and firewall or retry later."
+    exit -1
+fi
+
 chmod 755 /usr/bin/kubectl
 
 cp /vagrant/bin/* /usr/bin
