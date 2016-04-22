@@ -97,13 +97,14 @@ Stderr from the command:
 
 mount.nfs: Connection timed out
 ```
-A way to solve this problem is to configure your host firewall to allow the communication.  
-A simple check that you may perform to verify if you are seeing firewall related issues is this:
+A way to solve this problem is to configure your **host** firewall to allow the communication.  
 ```
-# valid for a systemd based Linux
-sudo systemctl stop firewalld
+sudo firewall-cmd --permanent --add-service=nfs &&
+>   sudo firewall-cmd --permanent --add-service=rpc-bind &&
+>   sudo firewall-cmd --permanent --add-service=mountd &&
+>   sudo firewall-cmd --reload
 ```
-But the suggestion is to tune `firewalld` and specify more granular traffic rules.
+Note: completely disabling `firewalld` service (and implicitely some useful `iptables` rule) might prevent the vm to be able to access the internet correctly.
 
 ### Follow on screen instructions
 
