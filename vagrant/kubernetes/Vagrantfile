@@ -28,23 +28,6 @@ if [ "x${FABRIC8_SHARED_STORAGE}" != "x" ]; then
   systemctl daemon-reload
   systemctl restart docker
 
-  mkdir -p /opt/shared/squid_cache
-  if [ -e "/opt/shared/squid.tar" ]; then
-    echo "Importing cached Squid Image..."
-    docker load -i /opt/shared/squid.tar
-  fi
-  echo "Starting Squid Proxy container..."
-  docker run --name squid -d --restart=always \
-    -p 3128:3128 \
-    -v /opt/shared/squid_cache:/var/cache/squid3 \
-    pantinor/squid
-  echo "Squid Web Cache started!"
-  export SQUID_PROXY=' --proxy localhost:3128'
-  if [ ! -e  "/opt/shared/squid.tar" ]; then
-    echo "Storing Docker Registry Image on shared file system..."
-    docker save -o /opt/shared/squid.tar pantinor/squid
-  fi
-
   if [ -e "/opt/shared/hypercube/${K8S_VERSION}/hypercube.tar" ]; then
     echo "Importing cached Hypercube Image..."
     docker load -i /opt/shared/hypercube/${K8S_VERSION}/hypercube.tar
@@ -77,15 +60,8 @@ if [ ${VM_MEMORY} -lt 8192 ]; then
 fi
 echo "=========================================================================="
 
-export MAX_RETRIES=10;
 echo "Downloading Kubernetes release..."
-while !  curl $SQUID_PROXY  --retry 999 --retry-max-time 0  -L -o /usr/bin/kubectl  http://storage.googleapis.com/kubernetes-release/release/${KUBECTL_VERSION}/bin/linux/amd64/kubectl
-  do
-    echo "Down. Retries left: $MAX_RETRIES" ;
-    [ "$MAX_RETRIES" -gt "0" ] && export MAX_RETRIES=$((MAX_RETRIES - 1 )) || break;
-    sleep 5s
-  done ;
-  set +x
+curl   --retry 999 --retry-max-time 0  -L -o /usr/bin/kubectl  http://storage.googleapis.com/kubernetes-release/release/${KUBECTL_VERSION}/bin/linux/amd64/kubectl
 if [ $? -ne 0 ]; then
     echo "Cannot download Kubernetes client from the internet. Check your connectivity and firewall or retry later."
     exit -1
@@ -133,7 +109,7 @@ EOT
 
 mkdir -p /tmp/gofabric8-download
 cd /tmp/gofabric8-download
-curl $SQUID_PROXY --retry 999 --retry-max-time 0 -sSL https://github.com/fabric8io/gofabric8/releases/download/v0.4.10/gofabric8-0.4.10-linux-amd64.tar.gz | tar xzv
+curl --retry 999 --retry-max-time 0 -sSL https://github.com/fabric8io/gofabric8/releases/download/v0.4.10/gofabric8-0.4.10-linux-amd64.tar.gz | tar xzv
 chmod +x gofabric8
 sudo mv gofabric8 /usr/bin
 
