@@ -61,11 +61,16 @@ fi
 echo "=========================================================================="
 
 echo "Downloading Kubernetes release..."
-curl   --retry 999 --retry-max-time 0  -L -o /usr/bin/kubectl  http://storage.googleapis.com/kubernetes-release/release/${KUBECTL_VERSION}/bin/linux/amd64/kubectl
-if [ $? -ne 0 ]; then
-    echo "Cannot download Kubernetes client from the internet. Check your connectivity and firewall or retry later."
-    exit -1
+mkdir -p /opt/shared/kubectl/${KUBECTL_VERSION}
+if [ ! -e  "/opt/shared/kubectl/${KUBECTL_VERSION}/kubectl" ]; then
+  curl --retry 999 --retry-max-time 0  -L -o /opt/shared/kubectl/${KUBECTL_VERSION}/kubectl  http://storage.googleapis.com/kubernetes-release/release/${KUBECTL_VERSION}/bin/linux/amd64/kubectl
+  if [ $? -ne 0 ]; then
+      echo "Cannot download Kubernetes client from the internet. Check your connectivity and firewall or retry later."
+      exit -1
+  fi
 fi
+cp /opt/shared/kubectl/${KUBECTL_VERSION}/kubectl /usr/bin/kubectl
+
 echo "Kubernetes release downloaded!"
 
 chmod 755 /usr/bin/kubectl
@@ -112,6 +117,22 @@ cd /tmp/gofabric8-download
 curl --retry 999 --retry-max-time 0 -sSL https://github.com/fabric8io/gofabric8/releases/download/v0.4.10/gofabric8-0.4.10-linux-amd64.tar.gz | tar xzv
 chmod +x gofabric8
 sudo mv gofabric8 /usr/bin
+
+GO_FABRIC8_VERSION="0.4.10"
+mkdir -p /tmp/gofabric8-download/${GO_FABRIC8_VERSION}
+cd /tmp/gofabric8-download/${GO_FABRIC8_VERSION}
+mkdir -p /opt/shared/go_fabric8/${GO_FABRIC8_VERSION}
+if [ ! -e "/opt/shared/go_fabric8/${GO_FABRIC8_VERSION}/go_fabric8.tar.gz" ]; then
+  curl --retry 999 --retry-max-time 0  -L -o /opt/shared/go_fabric8/${GO_FABRIC8_VERSION}/go_fabric8.tar.gz  "https://github.com/fabric8io/gofabric8/releases/download/v${GO_FABRIC8_VERSION}/gofabric8-${GO_FABRIC8_VERSION}-linux-amd64.tar.gz"
+  if [ $? -ne 0 ]; then
+      echo "Cannot download Kubernetes client from the internet. Check your connectivity and firewall or retry later."
+      exit -1
+  fi
+fi
+
+tar -xzvf /opt/shared/go_fabric8/${GO_FABRIC8_VERSION}/go_fabric8.tar.gz
+chmod +x gofabric8
+mv gofabric8 /usr/bin/
 
 echo "Using gofabric8 to deploy fabric8 on kubernetes"
 
