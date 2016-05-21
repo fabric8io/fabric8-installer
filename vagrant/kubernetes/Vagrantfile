@@ -5,50 +5,45 @@
 # Vagrantfile API/syntax version. Don't touch unless you know what you're doing!
 VAGRANTFILE_API_VERSION = "2"
 
-Vagrant.require_version ">= 1.7.2"
+Vagrant.require_version ">= 1.7.4"
+
+KUBERNETES_VERSION = ENV["KUBERNETES_VERSION"] || "1.3.0-alpha.2"
+
+# for running the CD Pipeline we recommend at least 8000 for memory!
+$vmMemory = Integer(ENV['FABRIC8_VM_MEMORY'] || 4096)
 
 $provisionScript = <<SCRIPT
 
-echo "Installing etcd locally"
+export K8S_VERSION="v#{KUBERNETES_VERSION}"
+export KUBECTL_VERSION="v#{KUBERNETES_VERSION}"
+export KUBECTL_VERSION="v1.2.2"
 
-yum -y install etcd git
+# Check memory
+VM_MEMORY="#{$vmMemory}"
+echo "=========================================================================="
+echo "Using VM Memory of ${VM_MEMORY} MB"
+if [ ${VM_MEMORY} -lt 8192 ]; then
+  echo "NOTE: We recommend at least 8192 MB for running the 'cd-pipeline'."
+  echo "      You can specify this with an environment variable FABRIC8_VM_MEMORY"
+  echo "      E.g. when creating the VM with : 'FABRIC8_VM_MEMORY=8192 vagrant up'"
+fi
+echo "=========================================================================="
 
+curl -Lo /usr/bin/kubectl http://storage.googleapis.com/kubernetes-release/release/${KUBECTL_VERSION}/bin/linux/amd64/kubectl
+if [ $? -ne 0 ]; then
+    echo "Cannot download Kubernetes client from the internet. Check your connectivity and firewall or retry later."
+    exit -1
+fi
 
-echo "systemctl start etcd..."
-echo `systemctl start etcd`
+chmod 755 /usr/bin/kubectl
 
-curl -sSL https://get.kismatic.com/kubernetes/master.sh | sudo sh
+cp /vagrant/bin/* /usr/bin
+chmod 775 /usr/bin/recreate-kubernetes
+chmod 775 /usr/bin/start-kubernetes
 
-yum clean expire-cache
-
-# enable cors on api server
-echo 'KUBE_API_ARGS="--runtime_config=api/v1beta3 --cluster_name=kubernetes --cors-allowed-origins=.*"' >> /etc/kubernetes/master/apiserver.conf
-
-
-echo "Running Services"
-echo "systemctl start kube-apiserver..."
-echo `systemctl start kube-apiserver`
-
-echo "systemctl start kube-scheduler..."
-echo `systemctl start kube-scheduler`
-
-echo "systemctl start kube-controller-manager..."
-echo `systemctl start kube-controller-manager`
-
-echo "systemctl start kubelet..."
-echo `systemctl start kubelet`
-
-echo "service status with"
-echo `systemctl list-units -t service`
-
-echo "waiting 5s for service start"
-sleep 5
-
-echo "Testing api server with curl http://localhost:8080/version"
-echo `curl http://localhost:8080/version`
+/usr/bin/start-kubernetes
 
 cat <<EOT
-
 
 Testing kubernetes
 ==================
@@ -71,17 +66,24 @@ Now downloading gofabric8...
 EOT
 
 
-curl --retry 999 --retry-max-time 0  -sSL  https://fabric8-ci.fusesource.com/job/gofabric8/lastSuccessfulBuild/artifact/src/github.com/fabric8io/gofabric8/build/gofabric8 > /tmp/gofabric8
-chmod +x /tmp/gofabric8
-sudo mv /tmp/gofabric8 /usr/bin
+mkdir -p /tmp/gofabric8-download
+cd /tmp/gofabric8-download
+curl --retry 999 --retry-max-time 0 -sSL https://github.com/fabric8io/gofabric8/releases/download/v0.4.13/gofabric8-0.4.13-linux-amd64.tar.gz | tar xzv
+chmod +x gofabric8
+sudo mv gofabric8 /usr/bin
 
 echo "Using gofabric8 to deploy fabric8 on kubernetes"
-sudo gofabric8 deploy
+
+kubectl get pods
+
+gofabric8 -s http://172.28.128.80:8080 deploy -y
+gofabric8 -s http://172.28.128.80:8080 secrets -y
+gofabric8 -s http://172.28.128.80:8080 volume -y --host-path="/vagrant/fabric8-data"
 
 echo ""
 echo "Waiting for the fabric8 console to start..."
 
-until kubectl --server=http://172.28.128.80:8080 get pods -l component=console,provider=fabric8  | grep -m 1 "Running"; do sleep 1 ; done
+until kubectl get pods -l project=console,provider=fabric8  | grep -m 1 "Running"; do sleep 1 ; done
 
 
 cat <<EOT
@@ -97,7 +99,7 @@ You can now open the fabric8 console at:
 Now to use the kubectl command line tool type:
 
 kubectl config set-cluster local --server=http://172.28.128.80:8080
-kubectl config set-context local
+kubectl config set-context local --cluster local
 kubectl config use-context local
 kubectl get pods
 
@@ -105,6 +107,15 @@ export KUBERNETES_MASTER=http://172.28.128.80:8080
 export DOCKER_HOST=tcp://172.28.128.80:2375
 unset DOCKER_TLS_VERIFY
 unset DOCKER_CERT_PATH
+
+
+If you ever find kubernetes apiserver or kubelet fails you can usually docker restart the container.
+
+To recreate all the docker containers you can run:
+
+  recreate-kubernetes
+
+which will delete all docker containers and recreate kubernetes; which should recreate all the pods from kubernetes too.
 
 EOT
 
@@ -141,21 +152,23 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   end
 
   config.vm.box = "jimmidyson/centos-7.1"
-  config.vm.box_version = "= 1.1.2"
+  config.vm.box_version = "= 1.3.1"
 
   config.vm.network "private_network", ip: "172.28.128.80"
 
   config.vm.hostname = "vagrant." + $tld
 
   config.vm.provider "virtualbox" do |v|
-    v.memory = 4096
+    v.memory = $vmMemory
     v.cpus = 2
     v.customize ["modifyvm", :id, "--natdnshostresolver1", "on"]
   end
 
-  config.vm.provider :libvirt do |v|
+  config.vm.provider :libvirt do |v, override|
     v.cpus = 2
-    v.memory = 4096
+    v.memory = $vmMemory
+
+    override.vm.allowed_synced_folder_types = [:nfs, :rsync]
   end
 
   config.vm.provision "shell", inline: $provisionScript, keep_color: true

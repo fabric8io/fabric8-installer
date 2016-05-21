@@ -1,8 +1,12 @@
-## Fabric8 OpenShift Vagrant Image
+## Fabric8 Kubernetes Vagrant Image
 
-This is the fastest way to get going with Fabric8 and OpenShift on your laptop.
+**NOTE** right now to install this vagrant file you need to download a tarball of Kubernetes and unpack it to a local `kubernetes` folder in this directory!
 
-This Vagrant image uses the [gofabric8](https://github.com/fabric8io/gofabric8) installer to install and configure Fabric8 on a vanilla OpenShift.
+```
+curl -L https://github.com/kubernetes/kubernetes/releases/download/v1.3.0-alpha.2/kubernetes.tar.gz | tar xzv
+```
+
+This is the fastest way to get going with Fabric8 and Kubernetes on your laptop.
 
 ### Download and Install
 
@@ -13,17 +17,13 @@ First clone the [fabric8 installer git repository](https://github.com/fabric8io/
 
 ```
 git clone https://github.com/fabric8io/fabric8-installer.git
-cd fabric8-installer/vagrant/openshift
+cd fabric8-installer/vagrant/kubernetes
 ```
 
-### Prepare Vagrant
+### Prepare Vargant
 
 The next steps are specific for different operating systems. They are needed to allow easy access to
 dynamically generated OpenShift routes. These steps are needed only once.
-
-Some additional vagrant plugins are required to provide additional features like :
-* Plugin [landrush](https://github.com/phinze/landrush) : provides a simple dns server for vagrant guests
-* Plugin [host-manager](https://github.com/smdahlen/vagrant-hostmanager) : manages the /etc/hosts file on guests within a multi-machine environment
 
 #### Linux
 
@@ -52,9 +52,9 @@ as well.
 
 * Install the Vagrant plugin `landrush`
 
-````
+```
 vagrant plugin install landrush
-````
+```
 
 That's it. OS X will automatically resolve now all routes to `*.vagrant.f8` your Vagrant VM. This is done vial OS X's resolver feature
 (see `man 5 resolver` for details)
@@ -78,33 +78,6 @@ Now startup vagrant with
 ```
 vagrant up
 ```
-
-### Debug tips
-
-`vagrant up` script, among other things, mounts some folder of the vms into your host file system.  
-It does that via `NFS`.  
-`NFS` might report errors similar to the following if it cannot connect to the vm:
-```
-==> default: Mounting NFS shared folders...
-The following SSH command responded with a non-zero exit status.
-Vagrant assumes that this means the command failed!
-
-mount -o 'vers=3,udp' 192.168.121.1:'/500GB/fabric8v2/code/fabric8-installer/vagrant/openshift' /vagrant
-
-Stdout from the command:
-
-Stderr from the command:
-
-mount.nfs: Connection timed out
-```
-A way to solve this problem is to configure your **host** firewall to allow the communication.  
-```
-sudo firewall-cmd --permanent --add-service=nfs &&
->   sudo firewall-cmd --permanent --add-service=rpc-bind &&
->   sudo firewall-cmd --permanent --add-service=mountd &&
->   sudo firewall-cmd --reload
-```
-Note: completely disabling `firewalld` service (and implicitely some useful `iptables` rule) might prevent the vm to be able to access the internet correctly.
 
 ### Follow on screen instructions
 

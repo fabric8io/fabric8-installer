@@ -1,0 +1,53 @@
+#!/bin/sh
+export K8S_VERSION="v1.3.0-alpha.2"
+
+export DNS_REPLICAS=1
+export DNS_DOMAIN=cluster.local
+export DNS_SERVER_IP=10.0.0.10
+
+echo "Running Kubernetes version: ${K8S_VERSION} with DNS domain: ${DNS_DOMAIN} and DNS server IP: ${DNS_SERVER_IP}"
+
+docker run \
+    --volume=/:/rootfs:ro \
+    --volume=/sys:/sys:ro \
+    --volume=/var/lib/docker/:/var/lib/docker:rw \
+    --volume=/var/lib/kubelet/:/var/lib/kubelet:rw \
+    --volume=/var/run:/var/run:rw \
+    --net=host \
+    --pid=host \
+    --privileged=true \
+    --name=kubelet \
+    -d \
+    gcr.io/google_containers/hyperkube-amd64:${K8S_VERSION} \
+    /hyperkube kubelet \
+        --containerized \
+        --hostname-override="172.28.128.80" \
+        --address="0.0.0.0" \
+        --api-servers=http://172.28.128.80:8080 \
+        --config=/etc/kubernetes/manifests \
+        --cluster-dns=10.0.0.10 \
+        --cluster-domain=cluster.local \
+        --allow-privileged=true --v=2
+
+kubectl config set-cluster default --server=http://localhost:8080
+kubectl config set-context default --cluster=cluster
+kubectl config use-context default
+
+until kubectl get pods 2>/dev/null >/dev/null;
+do
+  sleep 1
+done
+
+docker exec kubelet sed -i 's/--insecure-bind-address=127.0.0.1/--insecure-bind-address=0.0.0.0/' /etc/kubernetes/manifests/master.json
+
+until kubectl get pods --server=http://172.28.128.80:8080 2>/dev/null >/dev/null;
+do
+  sleep 1
+done
+
+kubectl create namespace kube-system
+
+curl -LO http://kubernetes.io/docs/getting-started-guides/docker-multinode/skydns.yaml.in
+
+sed -e "s/{{ pillar\\['dns_replicas'\\] }}/${DNS_REPLICAS}/g;s/{{ pillar\\['dns_domain'\\] }}/${DNS_DOMAIN}/g;s/{{ pillar\\['dns_server'\\] }}/${DNS_SERVER_IP}/g" skydns.yaml.in > ./skydns.yaml
+kubectl apply -f ./skydns.yaml

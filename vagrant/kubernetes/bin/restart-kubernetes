@@ -1,0 +1,11 @@
+#!/bin/sh
+echo "Recreating kubernetes..."
+
+echo "Stopping all docker containers"
+docker stop $(docker ps -a -q)
+
+echo "Removing all docker containers"
+docker rm -f $(docker ps -a -q)
+
+echo "Starting Kuberentes"
+start-kubernetes
