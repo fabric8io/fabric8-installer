@@ -96,13 +96,14 @@ while true; do
   curl -k -s -f -o /dev/null --connect-timeout 1 https://localhost:8443/healthz/ready && break || sleep 1
 done
 
-
 oc adm policy add-cluster-role-to-user cluster-admin admin
 oc adm policy add-cluster-role-to-group cluster-reader system:serviceaccounts
 
 gofabric8 deploy -y
 gofabric8 secrets -y
 gofabric8 volume -y --host-path="/vagrant/fabric8-data"
+
+oc adm policy add-cluster-role-to-group cluster-reader system:serviceaccounts
 
 cat <<EOT
 
