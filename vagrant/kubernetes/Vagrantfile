@@ -68,7 +68,7 @@ EOT
 
 mkdir -p /tmp/gofabric8-download
 cd /tmp/gofabric8-download
-curl --retry 999 --retry-max-time 0 -sSL https://github.com/fabric8io/gofabric8/releases/download/v0.4.13/gofabric8-0.4.13-linux-amd64.tar.gz | tar xzv
+curl --retry 999 --retry-max-time 0 -sSL https://github.com/fabric8io/gofabric8/releases/download/v0.4.19/gofabric8-0.4.19-linux-amd64.tar.gz | tar xzv
 chmod +x gofabric8
 sudo mv gofabric8 /usr/bin
 
