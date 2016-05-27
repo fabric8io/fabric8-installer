@@ -25,6 +25,10 @@ if [ ${VM_MEMORY} -lt 8192 ]; then
 fi
 echo "=========================================================================="
 
+# ========================
+GOFABRIC8_VERSION="0.4.23"
+# ========================
+
 # download gofabric8
 mkdir /tmp/gofabric8
 
@@ -34,7 +38,7 @@ unzip helm.zip
 mv helm /bin/helm
 
 # TODO for now lets use the latest build until we've a release...
-curl --retry 999 --retry-max-time 0 -sSL https://github.com/fabric8io/gofabric8/releases/download/v0.4.21/gofabric8-0.4.21-linux-amd64.tar.gz | tar xzv -C /tmp/gofabric8
+curl --retry 999 --retry-max-time 0 -sSL https://github.com/fabric8io/gofabric8/releases/download/v${GOFABRIC8_VERSION}/gofabric8-${GOFABRIC8_VERSION}-linux-amd64.tar.gz | tar xzv -C /tmp/gofabric8
 #curl --retry 999 --retry-max-time 0  -sSL https://fabric8-ci.fusesource.com/job/gofabric8/lastSuccessfulBuild/artifact/src/github.com/fabric8io/gofabric8/build/gofabric8 > /tmp/gofabric8/gofabric8
 chmod +x /tmp/gofabric8/gofabric8
 mv /tmp/gofabric8/* /usr/bin/
