@@ -11,6 +11,7 @@ KUBERNETES_VERSION = ENV["KUBERNETES_VERSION"] || "1.3.0-alpha.2"
 
 # for running the CD Pipeline we recommend at least 8000 for memory!
 $vmMemory = Integer(ENV['FABRIC8_VM_MEMORY'] || 4096)
+$runApp = ENV['FABRIC8_APP']
 
 $provisionScript = <<SCRIPT
 
@@ -18,9 +19,18 @@ export K8S_VERSION="v#{KUBERNETES_VERSION}"
 export KUBECTL_VERSION="v#{KUBERNETES_VERSION}"
 export KUBECTL_VERSION="v1.2.2"
 
+export RUN_APP="v#{$runApp}"
+APP_PARAM="--app=${RUN_APP}"
+if [ "$RUN_APP" == "" ];then
+  APP_PARAM=""
+fi
+
 # Check memory
 VM_MEMORY="#{$vmMemory}"
 echo "=========================================================================="
+echo "Running Fabric8 App: ${RUN_APP} - to configure it set the environment variable FABRIC8_APP"
+echo "Using gofabric8 parameter ${APP_PARAM}"
+echo ""
 echo "Using VM Memory of ${VM_MEMORY} MB"
 if [ ${VM_MEMORY} -lt 8192 ]; then
   echo "NOTE: We recommend at least 8192 MB for running the 'cd-pipeline'."
@@ -79,7 +89,8 @@ echo "Using gofabric8 to deploy fabric8 on kubernetes"
 
 kubectl get pods
 
-gofabric8 -s http://172.28.128.80:8080 deploy -y
+
+gofabric8 -s http://172.28.128.80:8080 deploy -y ${APP_PARAM}
 gofabric8 -s http://172.28.128.80:8080 secrets -y
 gofabric8 -s http://172.28.128.80:8080 volume -y --host-path="/vagrant/fabric8-data"
 
