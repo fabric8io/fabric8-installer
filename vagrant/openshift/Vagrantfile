@@ -82,6 +82,8 @@ kubeletArguments:
     - "10255"
 EOF
 sed -i 's|^podManifestConfig: null|podManifestConfig:\\n  path: /var/lib/openshift/openshift.local.manifests\\n  fileCheckIntervalSeconds: 10|' /var/lib/openshift/openshift.local.config/node-172.28.128.4/node-config.yaml
+# Append the external DNS Nameserver
+sed -i 's/dnsIP: \"\"/dnsIP: \"172.28.128.4\"/g' /var/lib/openshift/openshift.local.config/node-172.28.128.4/node-config.yaml
 popd
 restorecon -Rv /var/lib/openshift
 
