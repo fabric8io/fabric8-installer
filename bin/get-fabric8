@@ -18,7 +18,7 @@ elif [[ "$OSTYPE" == "cygwin" ]]; then
 elif [[ "$OSTYPE" == "msys" ]]; then
   # Lightweight shell and GNU utilities compiled for Windows (part of MinGW)
   DISTRO="windows-amd64"
-elif [[ "$OSTYPE" == "win32" ]]; then
+elif [[ "$OSTYPE" == "win"* ]]; then
   DISTRO="windows-amd64"
 fi
 
