@@ -2,7 +2,8 @@
 
 echo "Installing Fabric8 Microservices Platform!"
 echo ""
-echo "For more information see: "
+echo "For more information see: http://fabric8.io/guide/getStarted/"
+echo ""
 
 
 VERSION="0.4.30"
