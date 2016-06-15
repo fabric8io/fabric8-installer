@@ -5,7 +5,7 @@ echo ""
 echo "For more information see: "
 
 
-VERSION="0.4.29"
+VERSION="0.4.30"
 DISTRO="linux-amd64"
 
 # TODO how to detect `linux-arm` distro?
