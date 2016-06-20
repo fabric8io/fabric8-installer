@@ -19,7 +19,7 @@ export K8S_VERSION="v#{KUBERNETES_VERSION}"
 export KUBECTL_VERSION="v#{KUBERNETES_VERSION}"
 export KUBECTL_VERSION="v1.2.2"
 
-export RUN_APP="v#{$runApp}"
+export RUN_APP="#{$runApp}"
 APP_PARAM="--app=${RUN_APP}"
 if [ "$RUN_APP" == "" ];then
   APP_PARAM=""
