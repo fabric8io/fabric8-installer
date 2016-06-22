@@ -137,10 +137,7 @@ SCRIPT
 
 $windows = (/cygwin|mswin|mingw|bccwin|wince|emx/ =~ RUBY_PLATFORM) != nil
 
-if $windows && Vagrant.has_plugin?("vagrant-hostmanager")
-  raise 'Conflicting vagrant plugin detected - please uninstall & then try again: vagrant plugin uninstall vagrant-hostmanager'
-end
-$pluginToCheck = $windows ? "vagrant-hostmanager-fabric8" : "landrush"
+$pluginToCheck = $windows ? "vagrant-hostmanager" : "landrush"
 unless Vagrant.has_plugin?($pluginToCheck)
   raise 'Please type this command then try again: vagrant plugin install ' + $pluginToCheck
 end
