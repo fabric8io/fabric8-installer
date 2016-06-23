@@ -48,7 +48,7 @@ fi
 chmod 755 /usr/bin/kubectl
 
 cp /vagrant/bin/* /usr/bin
-chmod 775 /usr/bin/recreate-kubernetes
+chmod 775 /usr/bin/restart-kubernetes
 chmod 775 /usr/bin/start-kubernetes
 
 /usr/bin/start-kubernetes
@@ -125,11 +125,11 @@ unset DOCKER_CERT_PATH
 
 If you ever find kubernetes apiserver or kubelet fails you can usually docker restart the container.
 
-To recreate all the docker containers you can run:
+To restart all the docker containers you can run:
 
-  recreate-kubernetes
+  restart-kubernetes
 
-which will delete all docker containers and recreate kubernetes; which should recreate all the pods from kubernetes too.
+which will delete all docker containers and restart kubernetes; which should restart all the pods from kubernetes too.
 
 EOT
 
