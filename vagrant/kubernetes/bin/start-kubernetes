@@ -1,5 +1,5 @@
 #!/bin/sh
-export K8S_VERSION="v1.3.0-alpha.2"
+export K8S_VERSION="v1.3.0-alpha.3"
 
 export DNS_REPLICAS=1
 export DNS_DOMAIN=cluster.local
