@@ -117,6 +117,7 @@ oc adm policy add-cluster-role-to-group cluster-reader system:serviceaccounts
 gofabric8 deploy -y ${APP_PARAM}
 gofabric8 secrets -y
 gofabric8 volume -y --host-path="/vagrant/fabric8-data"
+gofabric8 routes -y
 
 oc adm policy add-cluster-role-to-group cluster-reader system:serviceaccounts
 
