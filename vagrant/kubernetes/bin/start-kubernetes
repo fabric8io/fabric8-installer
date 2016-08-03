@@ -1,5 +1,5 @@
 #!/bin/sh
-export K8S_VERSION="v1.3.0-alpha.3"
+export K8S_VERSION="v1.3.4"
 
 export DNS_REPLICAS=1
 export DNS_DOMAIN=cluster.local
@@ -11,7 +11,7 @@ docker run \
     --volume=/:/rootfs:ro \
     --volume=/sys:/sys:ro \
     --volume=/var/lib/docker/:/var/lib/docker:rw \
-    --volume=/var/lib/kubelet/:/var/lib/kubelet:rw \
+    --volume=/var/lib/kubelet/:/var/lib/kubelet:rw,shared \
     --volume=/var/run:/var/run:rw \
     --net=host \
     --pid=host \
