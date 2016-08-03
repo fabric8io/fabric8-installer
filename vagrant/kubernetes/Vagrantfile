@@ -7,7 +7,7 @@ VAGRANTFILE_API_VERSION = "2"
 
 Vagrant.require_version ">= 1.7.4"
 
-KUBERNETES_VERSION = ENV["KUBERNETES_VERSION"] || "1.3.0-alpha.3"
+KUBERNETES_VERSION = ENV["KUBERNETES_VERSION"] || "1.3.4"
 
 # for running the CD Pipeline we recommend at least 8000 for memory!
 $vmMemory = Integer(ENV['FABRIC8_VM_MEMORY'] || 8192)
@@ -17,7 +17,6 @@ $provisionScript = <<SCRIPT
 
 export K8S_VERSION="v#{KUBERNETES_VERSION}"
 export KUBECTL_VERSION="v#{KUBERNETES_VERSION}"
-export KUBECTL_VERSION="v1.2.2"
 
 export RUN_APP="#{$runApp}"
 APP_PARAM="--app=${RUN_APP}"
@@ -50,6 +49,10 @@ chmod 755 /usr/bin/kubectl
 cp /vagrant/bin/* /usr/bin
 chmod 775 /usr/bin/restart-kubernetes
 chmod 775 /usr/bin/start-kubernetes
+
+mkdir -p /var/lib/kubelet
+mount -o bind /var/lib/kubelet /var/lib/kubelet
+mount --make-shared /var/lib/kubelet
 
 /usr/bin/start-kubernetes
 
@@ -162,8 +165,8 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     config.landrush.host_ip_address = '172.28.128.80'
   end
 
-  config.vm.box = "jimmidyson/centos-7.1"
-  config.vm.box_version = "= 1.3.1"
+  config.vm.box = "centos-7.1"
+#  config.vm.box_version = "= 1.3.1"
 
   config.vm.network "private_network", ip: "172.28.128.80"
 
