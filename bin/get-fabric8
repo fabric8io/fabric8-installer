@@ -6,7 +6,7 @@ echo "For more information see: http://fabric8.io/guide/getStarted/"
 echo ""
 
 
-VERSION="0.4.45"
+VERSION="0.4.46"
 DISTRO="linux-amd64"
 
 # TODO how to detect `linux-arm` distro?
