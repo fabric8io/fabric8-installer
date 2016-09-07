@@ -93,9 +93,10 @@ echo "Using gofabric8 to deploy fabric8 on kubernetes"
 kubectl get pods
 
 
-gofabric8 -s http://172.28.128.80:8080 deploy -y ${APP_PARAM}
-gofabric8 -s http://172.28.128.80:8080 secrets -y
-gofabric8 -s http://172.28.128.80:8080 volume -y --host-path="/vagrant/fabric8-data"
+# lets use --no-pvc to disable persistence
+# see: http://fabric8.io/guide/getStarted/persistence.html#disabling-persistence
+gofabric8 -s http://172.28.128.80:8080 deploy -y ${APP_PARAM} --no-pvc
+#gofabric8 -s http://172.28.128.80:8080 secrets -y
 
 echo ""
 echo "Waiting for the fabric8 console to start..."
