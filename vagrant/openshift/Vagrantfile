@@ -63,8 +63,8 @@ mkdir /tmp/openshift
 echo "Downloading OpenShift binaries..."
 
 # NOTE make sure the OpenShift version matches the same one in the download URL!
-OPENSHIFT_VERSION="1.3.0-alpha.2"
-curl --retry 999 --retry-max-time 0 -sSL https://github.com/openshift/origin/releases/download/v1.3.0-alpha.2/openshift-origin-server-v1.3.0-alpha.2-983578e-linux-64bit.tar.gz | tar xzv -C /tmp/openshift
+OPENSHIFT_VERSION="1.3.0-rc1"
+curl --retry 999 --retry-max-time 0 -sSL https://github.com/openshift/origin/releases/download/v1.3.0-rc1/openshift-origin-server-v1.3.0-rc1-ac0bb1bf6a629e0c262f04636b8cf2916b16098c-linux-64bit.tar.gz | tar xzv -C /tmp/openshift
 mv /tmp/openshift/openshift-origin-*/* /usr/bin/
 
 # lets setup helm with our repo
