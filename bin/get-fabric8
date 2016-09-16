@@ -1,0 +1,40 @@
+#!/bin/bash
+
+echo "Installing Fabric8 Microservices Platform!"
+echo ""
+echo "For more information see: http://fabric8.io/guide/getStarted/"
+echo ""
+
+
+VERSION="0.4.69"
+DISTRO="linux-amd64"
+
+# TODO how to detect `linux-arm` distro?
+
+if [[ "$OSTYPE" == "darwin"* ]]; then
+  DISTRO="darwin-amd64"
+elif [[ "$OSTYPE" == "cygwin" ]]; then
+  # POSIX compatibility layer and Linux environment emulation for Windows
+  DISTRO="windows-amd64"
+elif [[ "$OSTYPE" == "msys" ]]; then
+  # Lightweight shell and GNU utilities compiled for Windows (part of MinGW)
+  DISTRO="windows-amd64"
+elif [[ "$OSTYPE" == "win"* ]]; then
+  DISTRO="windows-amd64"
+fi
+
+URL="https://github.com/fabric8io/gofabric8/releases/download/v${VERSION}/gofabric8-${VERSION}-${DISTRO}.tar.gz"
+
+echo "downloading gofabric8 from: ${URL}"
+
+
+DIR="/tmp/gofabric8"
+mkdir -p ${DIR}
+curl --retry 999 --retry-max-time 0 -sSL ${URL} | tar xzv -C ${DIR}
+
+echo "Now running gofabric8 with arguments: $*"
+${DIR}/gofabric8 deploy $*
+
+
+
+

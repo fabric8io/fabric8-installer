@@ -7,20 +7,29 @@ VAGRANTFILE_API_VERSION = "2"
 
 Vagrant.require_version ">= 1.7.4"
 
-KUBERNETES_VERSION = ENV["KUBERNETES_VERSION"] || "1.3.0-alpha.2"
+KUBERNETES_VERSION = ENV["KUBERNETES_VERSION"] || "1.3.4"
 
 # for running the CD Pipeline we recommend at least 8000 for memory!
-$vmMemory = Integer(ENV['FABRIC8_VM_MEMORY'] || 4096)
+$vmMemory = Integer(ENV['FABRIC8_VM_MEMORY'] || 8192)
+$runApp = ENV['FABRIC8_APP']
 
 $provisionScript = <<SCRIPT
 
 export K8S_VERSION="v#{KUBERNETES_VERSION}"
 export KUBECTL_VERSION="v#{KUBERNETES_VERSION}"
-export KUBECTL_VERSION="v1.2.2"
+
+export RUN_APP="#{$runApp}"
+APP_PARAM="--app=${RUN_APP}"
+if [ "$RUN_APP" == "" ];then
+  APP_PARAM=""
+fi
 
 # Check memory
 VM_MEMORY="#{$vmMemory}"
 echo "=========================================================================="
+echo "Running Fabric8 App: ${RUN_APP} - to configure it set the environment variable FABRIC8_APP"
+echo "Using gofabric8 parameter ${APP_PARAM}"
+echo ""
 echo "Using VM Memory of ${VM_MEMORY} MB"
 if [ ${VM_MEMORY} -lt 8192 ]; then
   echo "NOTE: We recommend at least 8192 MB for running the 'cd-pipeline'."
@@ -38,8 +47,12 @@ fi
 chmod 755 /usr/bin/kubectl
 
 cp /vagrant/bin/* /usr/bin
-chmod 775 /usr/bin/recreate-kubernetes
+chmod 775 /usr/bin/restart-kubernetes
 chmod 775 /usr/bin/start-kubernetes
+
+mkdir -p /var/lib/kubelet
+mount -o bind /var/lib/kubelet /var/lib/kubelet
+mount --make-shared /var/lib/kubelet
 
 /usr/bin/start-kubernetes
 
@@ -65,10 +78,13 @@ Now downloading gofabric8...
 
 EOT
 
+# ========================
+GOFABRIC8_VERSION="0.4.69"
+# ========================
 
 mkdir -p /tmp/gofabric8-download
 cd /tmp/gofabric8-download
-curl --retry 999 --retry-max-time 0 -sSL https://github.com/fabric8io/gofabric8/releases/download/v0.4.13/gofabric8-0.4.13-linux-amd64.tar.gz | tar xzv
+curl --retry 999 --retry-max-time 0 -sSL https://github.com/fabric8io/gofabric8/releases/download/v${GOFABRIC8_VERSION}/gofabric8-${GOFABRIC8_VERSION}-linux-amd64.tar.gz | tar xzv
 chmod +x gofabric8
 sudo mv gofabric8 /usr/bin
 
@@ -76,9 +92,11 @@ echo "Using gofabric8 to deploy fabric8 on kubernetes"
 
 kubectl get pods
 
-gofabric8 -s http://172.28.128.80:8080 deploy -y
-gofabric8 -s http://172.28.128.80:8080 secrets -y
-gofabric8 -s http://172.28.128.80:8080 volume -y --host-path="/vagrant/fabric8-data"
+
+# lets use --no-pvc to disable persistence
+# see: http://fabric8.io/guide/getStarted/persistence.html#disabling-persistence
+gofabric8 -s http://172.28.128.80:8080 deploy -y ${APP_PARAM} --no-pvc
+#gofabric8 -s http://172.28.128.80:8080 secrets -y
 
 echo ""
 echo "Waiting for the fabric8 console to start..."
@@ -111,11 +129,11 @@ unset DOCKER_CERT_PATH
 
 If you ever find kubernetes apiserver or kubelet fails you can usually docker restart the container.
 
-To recreate all the docker containers you can run:
+To restart all the docker containers you can run:
 
-  recreate-kubernetes
+  restart-kubernetes
 
-which will delete all docker containers and recreate kubernetes; which should recreate all the pods from kubernetes too.
+which will delete all docker containers and restart kubernetes; which should restart all the pods from kubernetes too.
 
 EOT
 
@@ -123,10 +141,7 @@ SCRIPT
 
 $windows = (/cygwin|mswin|mingw|bccwin|wince|emx/ =~ RUBY_PLATFORM) != nil
 
-if $windows && Vagrant.has_plugin?("vagrant-hostmanager")
-  raise 'Conflicting vagrant plugin detected - please uninstall & then try again: vagrant plugin uninstall vagrant-hostmanager'
-end
-$pluginToCheck = $windows ? "vagrant-hostmanager-fabric8" : "landrush"
+$pluginToCheck = $windows ? "vagrant-hostmanager" : "landrush"
 unless Vagrant.has_plugin?($pluginToCheck)
   raise 'Please type this command then try again: vagrant plugin install ' + $pluginToCheck
 end
