@@ -114,9 +114,9 @@ done
 oc adm policy add-cluster-role-to-user cluster-admin admin
 oc adm policy add-cluster-role-to-group cluster-reader system:serviceaccounts
 
-# lets use --no-pvc to disable persistence
+# lets use --pv=false to disable persistence
 # see: http://fabric8.io/guide/getStarted/persistence.html#disabling-persistence
-gofabric8 deploy -y ${APP_PARAM} --no-pvc
+gofabric8 deploy -y ${APP_PARAM} --pv=false
 #gofabric8 secrets -y
 
 oc adm policy add-cluster-role-to-group cluster-reader system:serviceaccounts
