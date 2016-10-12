@@ -1,7 +1,12 @@
-## Fabric8 Installer
+## Fabric8 Installer : DEPRECATED!
 
-To get started using Fabric8 and Vagrant please see the [vagrant images](vagrant)
+**NOTE** the use of this project is now **deprecated**!
 
-There is also a nice new shiny go based installer called [gofabric8](https://github.com/fabric8io/gofabric8/) which is used automatically by the [openshift vagrant image](vagrant/openshift)
+If you wish to run fabric8 locally we highly recommend using either [minikube](http://fabric8.io/guide/getStarted/minikube.html) or [minishift](http://fabric8.io/guide/getStarted/minishift.html) now! They offer the chance to use native platform hypervisors (Hyper-V on Windows, Xhyve on Mac OS X or KVM on Linux) which is much snapper and uses lots less memory on your laptops!
 
-There are also a number of useful shell scripts for working with OpenShift and Kubernetes in the [bin folder](bin)
+
+### if you still wanna use it...
+
+See the [vagrant images](vagrant)
+
+There is also a nice new shiny go based installer called [gofabric8](https://github.com/fabric8io/gofabric8/) which is much easier to use and can avoid the use of Vagrant + Virtualbox
