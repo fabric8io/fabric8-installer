@@ -1,8 +1,11 @@
-## Fabric8 Kubernetes Vagrant Image
+## Fabric8 Kubernetes Vagrant Image : DEPRECATED!
 
-This is the fastest way to get going with Fabric8 and Kubernetes on your laptop.
+**NOTE** the use of this project is now **deprecated**!
 
-### Download and Install
+If you wish to run fabric8 locally we highly recommend using [minikube](http://fabric8.io/guide/getStarted/minikube.html) now! This offers the chance to use native platform hypervisors (Hyper-V on Windows, Xhyve on Mac OS X or KVM on Linux) which are much snapper and use lots less memory on your laptops!
+
+
+### if you still wanna use it...
 
 * Download and install [VirtualBox](https://www.virtualbox.org/wiki/Downloads)
 * Download and install [Vagrant](http://www.vagrantup.com/downloads.html)
