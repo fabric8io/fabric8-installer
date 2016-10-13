@@ -1,3 +1,22 @@
+<img src="https://cdn.rawgit.com/fabric8io/fabric8-installer/master/img/warning.png" alt="WARNING"
+     width="25" height="25">
+<img src="https://cdn.rawgit.com/fabric8io/fabric8-installer/master/img/warning.png" alt="WARNING"
+     width="25" height="25">
+<img src="https://cdn.rawgit.com/fabric8io/fabric8-installer/master/img/warning.png" alt="WARNING"
+     width="25" height="25">
+<img src="https://cdn.rawgit.com/fabric8io/fabric8-installer/master/img/warning.png" alt="WARNING"
+     width="25" height="25">
+<img src="https://cdn.rawgit.com/fabric8io/fabric8-installer/master/img/warning.png" alt="WARNING"
+     width="25" height="25">
+
+<h2>PLEASE NOTE: This repository is being deprecated and will not be maintained beyond October 2016</h2>
+
+For the best local developer experience on Kubernetes and OpenShift fabric8 recommends minikube and minishift
+ - [minikube](https://github.com/kubernetes/minikube)
+ - [minishift](https://github.com/jimmidyson/minishift)
+ - [fabric8 getting started guide](http://fabric8.io/guide/getStarted/index.html#don-t-have-a-kubernetes-cluster-yet)
+
+---
 ## NOTE
 These ansilble scripts and docs are modified from their original form in the [Kubernetes contrib project](https://github.com/kubernetes/contrib/tree/master/ansible/vagrant)
 
