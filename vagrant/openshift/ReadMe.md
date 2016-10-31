@@ -1,6 +1,29 @@
-## Fabric8 OpenShift Vagrant Image
+## Fabric8 OpenShift Vagrant Image : DEPRECATED!
 
-This is the fastest way to get going with Fabric8 and OpenShift on your laptop.
+<img src="https://cdn.rawgit.com/fabric8io/fabric8-installer/master/img/warning.png" alt="WARNING"
+     width="25" height="25">
+<img src="https://cdn.rawgit.com/fabric8io/fabric8-installer/master/img/warning.png" alt="WARNING"
+     width="25" height="25">
+<img src="https://cdn.rawgit.com/fabric8io/fabric8-installer/master/img/warning.png" alt="WARNING"
+     width="25" height="25">
+<img src="https://cdn.rawgit.com/fabric8io/fabric8-installer/master/img/warning.png" alt="WARNING"
+     width="25" height="25">
+<img src="https://cdn.rawgit.com/fabric8io/fabric8-installer/master/img/warning.png" alt="WARNING"
+     width="25" height="25">
+
+<h2>PLEASE NOTE: This repository is being deprecated and will not be maintained beyond October 2016</h2>
+
+For the best local developer experience on Kubernetes and OpenShift fabric8 recommends minikube and minishift
+ - [minikube](https://github.com/kubernetes/minikube)
+ - [minishift](https://github.com/jimmidyson/minishift)
+ - [fabric8 getting started guide](http://fabric8.io/guide/getStarted/index.html#don-t-have-a-kubernetes-cluster-yet)
+
+---
+
+We now prefer you to use OpenShfit via: [minishift](http://fabric8.io/guide/getStarted/minishift.html) now! This offers the chance to use native platform hypervisors (Hyper-V on Windows, Xhyve on Mac OS X or KVM on Linux) which are much snapper and use lots less memory on your laptops!
+
+
+### if you still wanna use it...
 
 This Vagrant image uses the [gofabric8](https://github.com/fabric8io/gofabric8) installer to install and configure Fabric8 on a vanilla OpenShift.
 
