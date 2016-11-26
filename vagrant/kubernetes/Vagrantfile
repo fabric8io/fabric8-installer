@@ -79,7 +79,7 @@ Now downloading gofabric8...
 EOT
 
 # ========================
-GOFABRIC8_VERSION="0.4.107"
+GOFABRIC8_VERSION="0.4.108"
 # ========================
 
 mkdir -p /tmp/gofabric8-download
